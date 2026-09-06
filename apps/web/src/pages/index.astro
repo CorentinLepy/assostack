@@ -1,5 +1,20 @@
 ---
+import PublicRichText from '../components/PublicRichText.astro'
+import PublicSiteLayout from '../layouts/PublicSiteLayout.astro'
+import {
+  getPublicOrganization,
+  getPublicPage,
+  isPublicContentConfigured,
+  listPublicPages,
+} from '../lib/public-content'
 import '../styles/global.css'
+
+const configured = isPublicContentConfigured()
+const publicSite = configured
+  ? await Promise.all([getPublicOrganization(), listPublicPages(), getPublicPage('home')]).then(
+      ([organization, pages, home]) => ({ organization, pages, home }),
+    )
+  : null
 
 const pillars = [
   {
@@ -21,46 +36,64 @@ const pillars = [
 ]
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <meta
-      name="description"
-      content="AssoStack is an open-source platform for associations and small organizations."
-    />
-    <title>AssoStack — Open platform for organizations</title>
-  </head>
-  <body>
-    <main>
-      <section class="hero">
-        <p class="eyebrow">AssoStack · pre-alpha</p>
-        <h1>One open stack for organizations that need more than a website.</h1>
-        <p class="lead">
-          AssoStack combines a public website, a modular CRM and integration-ready tooling in a
-          self-hostable platform built for associations and small organizations.
-        </p>
-        <div class="actions">
-          <a href="https://github.com/CorentinLepy/assostack">View the source</a>
-          <a class="secondary" href="#foundation">Explore the foundation</a>
-        </div>
-      </section>
+{
+  publicSite ? (
+    <PublicSiteLayout
+      organization={publicSite.organization}
+      pages={publicSite.pages}
+      title={publicSite.home.meta.title ?? publicSite.organization.name}
+      description={publicSite.home.meta.description ?? publicSite.home.summary}
+    >
+      <article class="content-page content-page--home">
+        <p class="eyebrow">{publicSite.organization.name}</p>
+        <h1>{publicSite.home.title}</h1>
+        {publicSite.home.summary && <p class="lead">{publicSite.home.summary}</p>}
+        <PublicRichText content={publicSite.home.content} />
+      </article>
+    </PublicSiteLayout>
+  ) : (
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width" />
+        <meta
+          name="description"
+          content="AssoStack is an open-source platform for associations and small organizations."
+        />
+        <title>AssoStack — Open platform for organizations</title>
+      </head>
+      <body>
+        <main>
+          <section class="hero">
+            <p class="eyebrow">AssoStack · pre-alpha</p>
+            <h1>One open stack for organizations that need more than a website.</h1>
+            <p class="lead">
+              AssoStack combines a public website, a modular CRM and integration-ready tooling in a
+              self-hostable platform built for associations and small organizations.
+            </p>
+            <div class="actions">
+              <a href="https://github.com/CorentinLepy/assostack">View the source</a>
+              <a class="secondary" href="#foundation">Explore the foundation</a>
+            </div>
+          </section>
 
-      <section id="foundation" class="grid" aria-label="Product foundations">
-        {pillars.map((pillar) => (
-          <article>
-            <h2>{pillar.title}</h2>
-            <p>{pillar.description}</p>
-          </article>
-        ))}
-      </section>
+          <section id="foundation" class="grid" aria-label="Product foundations">
+            {pillars.map((pillar) => (
+              <article>
+                <h2>{pillar.title}</h2>
+                <p>{pillar.description}</p>
+              </article>
+            ))}
+          </section>
 
-      <section class="status">
-        <p>
-          <strong>Current milestone:</strong> 0.1 Foundation — Astro, Payload, PostgreSQL, tenancy,
-          authentication and CI.
-        </p>
-      </section>
-    </main>
-  </body>
-</html>
+          <section class="status">
+            <p>
+              <strong>Current milestone:</strong> 0.2 CMS — tenant-aware content and a public Astro
+              delivery boundary.
+            </p>
+          </section>
+        </main>
+      </body>
+    </html>
+  )
+}
