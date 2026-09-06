@@ -1,5 +1,7 @@
 import type { Field, FieldHook } from 'payload'
 
+import { ensureMediaBelongsToCurrentOrganization } from './relationships'
+
 const populatePublishedAt: FieldHook = ({ siblingData, value }) => {
   if (siblingData._status === 'published' && !value) {
     return new Date()
@@ -45,6 +47,9 @@ export const seoFields: Field = {
       name: 'image',
       type: 'upload',
       relationTo: 'media',
+      hooks: {
+        beforeChange: [ensureMediaBelongsToCurrentOrganization],
+      },
       admin: {
         description: 'Optional social preview image. Public rendering is handled by the website layer.',
       },
