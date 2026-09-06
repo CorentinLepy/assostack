@@ -1,0 +1,42 @@
+---
+import type { PublicPostSummary } from '../../../../packages/contracts/src/public-content'
+import { formatPublicDate } from '../lib/format-date'
+
+interface Props {
+  locale: string
+  post: PublicPostSummary
+  timezone: string
+}
+
+const { locale, post, timezone } = Astro.props
+const publishedDate = formatPublicDate(post.publishedAt, locale, timezone)
+---
+
+<article class="news-card">
+  {
+    post.heroImage && (
+      <a class="news-card__image-link" href={`/news/${post.slug}`} tabindex="-1" aria-hidden="true">
+        <img
+          class="news-card__image"
+          src={post.heroImage.url}
+          alt=""
+          width={post.heroImage.width ?? undefined}
+          height={post.heroImage.height ?? undefined}
+          loading="lazy"
+        />
+      </a>
+    )
+  }
+  <div class="news-card__body">
+    {
+      publishedDate && post.publishedAt && (
+        <time class="news-card__date" datetime={post.publishedAt}>{publishedDate}</time>
+      )
+    }
+    <h2><a href={`/news/${post.slug}`}>{post.title}</a></h2>
+    {post.excerpt && <p>{post.excerpt}</p>}
+    <a class="news-card__read-more" href={`/news/${post.slug}`}>
+      Read article<span class="sr-only">: {post.title}</span>
+    </a>
+  </div>
+</article>
