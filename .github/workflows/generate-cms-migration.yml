@@ -1,0 +1,75 @@
+name: Generate CMS migration
+
+on:
+  push:
+    branches:
+      - cms/tenant-content
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: postgresql://assostack:assostack-ci@127.0.0.1:5432/assostack
+      PAYLOAD_SECRET: generation-only-not-a-production-secret
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3001
+      PUBLIC_WEB_URL: http://localhost:4321
+      NODE_ENV: production
+      PAYLOAD_DB_PUSH: "false"
+
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: assostack
+          POSTGRES_USER: assostack
+          POSTGRES_PASSWORD: assostack-ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U assostack -d assostack"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: cms/tenant-content
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.25.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate CMS migration when missing
+        run: |
+          if find apps/admin/src/migrations -maxdepth 1 -type f -name '*cms_foundation*.ts' | grep -q .; then
+            echo "CMS migration already exists; generation skipped."
+          else
+            pnpm --filter @assostack/admin migrate:create cms_foundation --force-accept-warning
+          fi
+
+      - name: Commit generated migration when changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/admin/src/migrations/
+          if git diff --cached --quiet; then
+            echo "No generated changes to commit."
+            exit 0
+          fi
+          git commit -m "db(cms): generate CMS foundation migration"
+          git push origin HEAD:cms/tenant-content
