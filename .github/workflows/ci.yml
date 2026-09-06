@@ -49,7 +49,7 @@ jobs:
           corepack prepare pnpm@11.25.0 --activate
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Typecheck
         run: pnpm typecheck
@@ -59,3 +59,52 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+  migrations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: postgresql://assostack:assostack-migrations-ci@127.0.0.1:5432/assostack
+      PAYLOAD_SECRET: migrations-ci-only-not-a-production-secret
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3001
+      PUBLIC_WEB_URL: http://localhost:4321
+      NODE_ENV: production
+      PAYLOAD_DB_PUSH: "false"
+
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: assostack
+          POSTGRES_USER: assostack
+          POSTGRES_PASSWORD: assostack-migrations-ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U assostack -d assostack"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.25.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply migrations to clean PostgreSQL
+        run: pnpm db:migrate
+
+      - name: Report migration status
+        run: pnpm db:migrate:status

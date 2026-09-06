@@ -14,6 +14,7 @@ import { Users } from './collections/Users'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const publicWebURL = process.env.PUBLIC_WEB_URL ?? 'http://localhost:4321'
+const shouldPushSchema = process.env.NODE_ENV === 'development' && process.env.PAYLOAD_DB_PUSH !== 'false'
 
 export default buildConfig({
   admin: {
@@ -26,10 +27,11 @@ export default buildConfig({
   cors: [publicWebURL],
   csrf: [publicWebURL],
   db: postgresAdapter({
+    migrationDir: path.resolve(dirname, 'migrations'),
     pool: {
       connectionString: process.env.DATABASE_URL ?? '',
     },
-    push: process.env.NODE_ENV !== 'production',
+    push: shouldPushSchema,
   }),
   editor: lexicalEditor(),
   plugins: [

@@ -14,6 +14,9 @@
     "build": "pnpm -r --if-present build",
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
+    "db:migrate": "pnpm --filter @assostack/admin migrate",
+    "db:migrate:create": "pnpm --filter @assostack/admin migrate:create",
+    "db:migrate:status": "pnpm --filter @assostack/admin migrate:status",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
