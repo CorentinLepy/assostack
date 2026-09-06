@@ -2,6 +2,7 @@ import type { CollectionBeforeChangeHook } from 'payload'
 import { ValidationError } from 'payload'
 
 import { getRelationshipID } from '../access/organizations'
+import { isBuiltInPublicRoute } from '../cms/public-routes'
 
 const isSafeExternalURL = (value: unknown): boolean => {
   if (typeof value !== 'string' || value.length === 0) {
@@ -113,6 +114,16 @@ export const validateWebsiteSettings: CollectionBeforeChangeHook = async ({
           throw validationError(
             `settings.website.navigation.${index}.url`,
             'External navigation URLs must use http:// or https://.',
+          )
+        }
+        continue
+      }
+
+      if (item.kind === 'route') {
+        if (!isBuiltInPublicRoute(item.route)) {
+          throw validationError(
+            `settings.website.navigation.${index}.route`,
+            'Select a supported built-in public route.',
           )
         }
         continue
