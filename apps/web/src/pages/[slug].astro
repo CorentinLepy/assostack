@@ -3,6 +3,7 @@ import type {
   PublicOrganization,
   PublicPageSummary,
 } from '../../../../packages/contracts/src/public-content'
+import PublicPageSections from '../components/PublicPageSections.astro'
 import PublicRichText from '../components/PublicRichText.astro'
 import PublicSiteLayout from '../layouts/PublicSiteLayout.astro'
 import {
@@ -45,6 +46,7 @@ if (!slug) {
 }
 
 const page = await getPublicPage(slug)
+const hasSections = page.sections.length > 0
 ---
 
 <PublicSiteLayout
@@ -53,10 +55,16 @@ const page = await getPublicPage(slug)
   title={page.meta.title ?? page.title}
   description={page.meta.description ?? page.summary}
 >
-  <article class="content-page">
-    <p class="eyebrow">{organization.name}</p>
-    <h1>{page.title}</h1>
-    {page.summary && <p class="lead">{page.summary}</p>}
-    <PublicRichText content={page.content} />
-  </article>
+  {
+    hasSections ? (
+      <PublicPageSections sections={page.sections} />
+    ) : (
+      <article class="content-page">
+        <p class="eyebrow">{organization.name}</p>
+        <h1>{page.title}</h1>
+        {page.summary && <p class="lead">{page.summary}</p>}
+        <PublicRichText content={page.content} />
+      </article>
+    )
+  }
 </PublicSiteLayout>
