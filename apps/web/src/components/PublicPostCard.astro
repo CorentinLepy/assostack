@@ -1,6 +1,7 @@
 ---
 import type { PublicPostSummary } from '../../../../packages/contracts/src/public-content'
 import { formatPublicDate } from '../lib/format-date'
+import { getPublicCopy } from '../lib/public-copy'
 
 interface Props {
   locale: string
@@ -10,6 +11,7 @@ interface Props {
 
 const { locale, post, timezone } = Astro.props
 const publishedDate = formatPublicDate(post.publishedAt, locale, timezone)
+const copy = getPublicCopy(locale)
 ---
 
 <article class="news-card">
@@ -36,7 +38,7 @@ const publishedDate = formatPublicDate(post.publishedAt, locale, timezone)
     <h2><a href={`/news/${post.slug}`}>{post.title}</a></h2>
     {post.excerpt && <p>{post.excerpt}</p>}
     <a class="news-card__read-more" href={`/news/${post.slug}`}>
-      Read article<span class="sr-only">: {post.title}</span>
+      {copy.readArticle}<span class="sr-only">: {post.title}</span>
     </a>
   </div>
 </article>
