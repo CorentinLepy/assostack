@@ -31,11 +31,14 @@ Automatic mode is the default and requires no navigation configuration.
 Organization administrators may define an ordered list containing:
 
 - internal published pages owned by the same organization;
+- built-in AssoStack public routes, such as News;
 - absolute external URLs using only `http://` or `https://`.
+
+Built-in routes are selected through stable internal keys. The first supported route is `news`, which resolves to `/news`. The key itself is not exposed by the public API. This registry can grow when new public modules actually exist, without teaching the Astro contract about backend route names.
 
 External entries may opt into a new browser tab. The Astro renderer adds `noopener noreferrer` when doing so.
 
-Manual navigation never exposes Payload relationship IDs. The public API serializes an explicit contract containing only `label`, `href`, `external`, and `newTab`.
+Manual navigation never exposes Payload relationship IDs, built-in route keys, or raw external configuration fields. The public API serializes an explicit contract containing only `label`, `href`, `external`, and `newTab`.
 
 A manual menu may intentionally be empty; AssoStack does not silently switch back to automatic navigation in that case.
 
@@ -96,7 +99,9 @@ AssoStack adds a server-side `beforeChange` validation hook to enforce tenant ow
 - the public logo;
 - internal navigation pages.
 
-The public serializer performs a second ownership check before emitting a relationship into the public contract. This is defense in depth; write-time validation remains the primary invariant.
+Built-in routes do not contain tenant relationships, but their keys are validated against AssoStack's constrained public-route registry. External links are independently restricted to `http://` and `https://` URLs.
+
+The public serializer performs a second ownership/route validation before emitting a navigation action into the public contract. This is defense in depth; write-time validation remains the primary invariant.
 
 ## Public contract
 
@@ -113,7 +118,7 @@ locale
 timezone
 ```
 
-Database IDs, role assignments and other Payload internals remain outside the public DTO.
+Database IDs, built-in route keys, role assignments and other Payload internals remain outside the public DTO.
 
 ## Deliberate non-features
 

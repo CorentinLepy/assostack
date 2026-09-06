@@ -15,6 +15,7 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
     "db:migrate": "pnpm --filter @assostack/admin migrate",
+    "db:migrate:down": "pnpm --filter @assostack/admin migrate:down",
     "db:migrate:create": "pnpm --filter @assostack/admin migrate:create",
     "db:migrate:status": "pnpm --filter @assostack/admin migrate:status",
     "format": "prettier --write .",
