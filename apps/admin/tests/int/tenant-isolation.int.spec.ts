@@ -212,15 +212,15 @@ describe('tenant isolation', () => {
     ).rejects.toThrow()
   })
 
-  test('gives a user with no organization no tenant-scoped data', async () => {
-    const result = await payload.find({
-      collection: 'contacts',
-      overrideAccess: false,
-      user: asRequestUser(unassignedUser) as any,
-      limit: 20,
-    })
-
-    expect(result.docs).toHaveLength(0)
+  test('denies tenant-scoped access to a user with no organization', async () => {
+    await expect(
+      payload.find({
+        collection: 'contacts',
+        overrideAccess: false,
+        user: asRequestUser(unassignedUser) as any,
+        limit: 20,
+      }),
+    ).rejects.toThrow()
   })
 
   test('keeps another organization isolated in the opposite direction', async () => {
