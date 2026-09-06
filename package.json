@@ -1,0 +1,24 @@
+{
+  "name": "assostack",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Open-source platform for associations and small organizations.",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=24.20.0 <25"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @assostack/web --filter @assostack/admin dev",
+    "dev:web": "pnpm --filter @assostack/web dev",
+    "dev:admin": "pnpm --filter @assostack/admin dev",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "3.9.6",
+    "typescript": "6.0.3"
+  }
+}

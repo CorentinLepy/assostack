@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-assostack}
+      POSTGRES_USER: ${POSTGRES_USER:-assostack}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-assostack-dev}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - assostack-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-assostack} -d ${POSTGRES_DB:-assostack}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  assostack-postgres:
