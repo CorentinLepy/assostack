@@ -1,11 +1,17 @@
 import type { CollectionConfig } from 'payload'
 
+import { isPlatformAdmin } from '../access/organizations'
+import { ensureFirstUserPlatformAdmin } from '../hooks/ensureFirstUserPlatformAdmin'
+
 export const Users: CollectionConfig = {
   slug: 'users',
   auth: true,
   admin: {
     useAsTitle: 'email',
-    defaultColumns: ['email', 'name', 'roles', 'updatedAt'],
+    defaultColumns: ['email', 'name', 'platformRoles', 'updatedAt'],
+  },
+  hooks: {
+    beforeChange: [ensureFirstUserPlatformAdmin],
   },
   fields: [
     {
@@ -13,25 +19,21 @@ export const Users: CollectionConfig = {
       type: 'text',
     },
     {
-      name: 'roles',
+      name: 'platformRoles',
       type: 'select',
       hasMany: true,
       required: true,
-      defaultValue: ['organization-admin'],
+      defaultValue: ['user'],
       options: [
         { label: 'Platform admin', value: 'platform-admin' },
-        { label: 'Organization admin', value: 'organization-admin' },
-        { label: 'Editor', value: 'editor' },
-        { label: 'Member', value: 'member' },
+        { label: 'User', value: 'user' },
       ],
-    },
-    {
-      name: 'organizations',
-      type: 'relationship',
-      relationTo: 'organizations',
-      hasMany: true,
+      access: {
+        create: ({ req }) => isPlatformAdmin(req.user),
+        update: ({ req }) => isPlatformAdmin(req.user),
+      },
       admin: {
-        description: 'Organizations this user can access. Tenant authorization will be enforced in the tenancy milestone.',
+        description: 'Installation-wide privileges. Organization roles are stored on each organization membership.',
       },
     },
   ],
