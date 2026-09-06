@@ -5,6 +5,10 @@ import { pageBlocks } from '../cms/blocks'
 import { contentVersions, publishedAtField, seoFields } from '../cms/fields'
 import { tenantSlugField } from '../cms/slug'
 import { assertOrganizationWriteAccess } from '../hooks/assertOrganizationWriteAccess'
+import {
+  createPublicContentSiteSyncAfterChange,
+  createPublicContentSiteSyncAfterDelete,
+} from '../site-rebuild/hooks'
 
 export const Pages: CollectionConfig = {
   slug: 'pages',
@@ -19,6 +23,8 @@ export const Pages: CollectionConfig = {
     delete: organizationRoleAccess(['organization-admin']),
   },
   hooks: {
+    afterChange: [createPublicContentSiteSyncAfterChange('page')],
+    afterDelete: [createPublicContentSiteSyncAfterDelete('page')],
     beforeChange: [assertOrganizationWriteAccess(['organization-admin', 'editor'])],
   },
   fields: [
