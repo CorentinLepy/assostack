@@ -87,6 +87,19 @@ If they are absent, `apps/web` builds the generic AssoStack project landing page
 
 If they are present, Astro fetches published content during the build. A configured production build is expected to fail when its content API is unavailable rather than silently deploy an incomplete site.
 
+A configured organization build currently generates:
+
+```text
+/                     organization home page
+/:slug                published organization pages
+/news                 published news listing
+/news/:slug           published news articles
+```
+
+The news index remains valid when an organization has no published posts and renders an explicit empty state. Publication dates are formatted using the organization's configured locale and timezone.
+
+The built-in `/news` route is intentionally not forced into every organization's navigation. Product routes and configurable navigation remain separate concerns so organizations can decide which capabilities are exposed in their public menu.
+
 This design means the generated public website can continue serving after a temporary Payload/CRM outage.
 
 ## Rich text safety
@@ -103,6 +116,7 @@ Expected follow-ups include:
 - preview flows for authenticated editors;
 - richer safe Lexical rendering;
 - media storage adapters such as S3-compatible/R2 storage;
-- localization;
+- broader localization infrastructure beyond the initial public copy helpers;
+- configurable navigation targets for built-in product routes;
 - API conditional requests (`ETag` / `Last-Modified`) if useful;
 - domain-to-organization resolution for hosted multi-tenant deployments.
