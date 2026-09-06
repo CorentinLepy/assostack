@@ -5,6 +5,10 @@ import { contentVersions, publishedAtField, seoFields } from '../cms/fields'
 import { ensureMediaBelongsToCurrentOrganization } from '../cms/relationships'
 import { tenantSlugField } from '../cms/slug'
 import { assertOrganizationWriteAccess } from '../hooks/assertOrganizationWriteAccess'
+import {
+  createPublicContentSiteSyncAfterChange,
+  createPublicContentSiteSyncAfterDelete,
+} from '../site-rebuild/hooks'
 
 export const Posts: CollectionConfig = {
   slug: 'posts',
@@ -19,6 +23,8 @@ export const Posts: CollectionConfig = {
     delete: organizationRoleAccess(['organization-admin']),
   },
   hooks: {
+    afterChange: [createPublicContentSiteSyncAfterChange('post')],
+    afterDelete: [createPublicContentSiteSyncAfterDelete('post')],
     beforeChange: [assertOrganizationWriteAccess(['organization-admin', 'editor'])],
   },
   fields: [
