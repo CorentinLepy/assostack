@@ -8,7 +8,10 @@ import { fileURLToPath } from 'url'
 
 import { isPlatformAdmin } from './access/organizations'
 import { Contacts } from './collections/Contacts'
+import { Media } from './collections/Media'
 import { Organizations } from './collections/Organizations'
+import { Pages } from './collections/Pages'
+import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 
 const filename = fileURLToPath(import.meta.url)
@@ -23,7 +26,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Organizations, Users, Contacts],
+  collections: [Organizations, Users, Contacts, Media, Pages, Posts],
   cors: [publicWebURL],
   csrf: [publicWebURL],
   db: postgresAdapter({
@@ -38,6 +41,9 @@ export default buildConfig({
     multiTenantPlugin({
       collections: {
         contacts: {},
+        media: {},
+        pages: {},
+        posts: {},
       },
       tenantField: {
         name: 'organization',
