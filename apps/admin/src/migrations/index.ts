@@ -1,6 +1,7 @@
 import * as migration_20260906_205240_initial_schema from './20260906_205240_initial_schema';
 import * as migration_20260906_210752_cms_foundation from './20260906_210752_cms_foundation';
 import * as migration_20260906_210900_cms_slug_uniqueness from './20260906_210900_cms_slug_uniqueness';
+import * as migration_20260906_214736_site_configuration from './20260906_214736_site_configuration';
 
 export const migrations = [
   {
@@ -17,5 +18,10 @@ export const migrations = [
     up: migration_20260906_210900_cms_slug_uniqueness.up,
     down: migration_20260906_210900_cms_slug_uniqueness.down,
     name: '20260906_210900_cms_slug_uniqueness',
+  },
+  {
+    up: migration_20260906_214736_site_configuration.up,
+    down: migration_20260906_214736_site_configuration.down,
+    name: '20260906_214736_site_configuration',
   },
 ];
