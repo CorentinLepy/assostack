@@ -189,6 +189,11 @@ describe('organization public-site settings', () => {
                 page: pageA.id,
               },
               {
+                label: 'News',
+                kind: 'route',
+                route: 'news',
+              },
+              {
                 label: 'Partner',
                 kind: 'external',
                 url: 'https://example.com/partner',
@@ -211,7 +216,8 @@ describe('organization public-site settings', () => {
     })
 
     expect((updated as any).settings?.website?.siteTitle).toBe('Alpha Club')
-    expect((updated as any).settings?.website?.navigation).toHaveLength(2)
+    expect((updated as any).settings?.website?.navigation).toHaveLength(3)
+    expect((updated as any).settings?.website?.navigation?.[1]?.route).toBe('news')
     expect((updated as any).settings?.website?.theme?.radius).toBe('large')
   })
 
@@ -281,7 +287,7 @@ describe('organization public-site settings', () => {
     }
   })
 
-  test('publishes ordered ID-free navigation and constrained theme tokens', async () => {
+  test('publishes ordered navigation with built-in routes and constrained theme tokens', async () => {
     const response = await publicSiteEndpoint.handler(endpointRequest('theme-association-alpha'))
     const body = (await response.json()) as any
 
@@ -296,6 +302,12 @@ describe('organization public-site settings', () => {
         external: false,
         href: '/about',
         label: 'About',
+        newTab: false,
+      },
+      {
+        external: false,
+        href: '/news',
+        label: 'News',
         newTab: false,
       },
       {
@@ -317,7 +329,9 @@ describe('organization public-site settings', () => {
       fontFamily: 'humanist',
       radius: 'large',
     })
-    expect(JSON.stringify(body.data.navigation)).not.toContain(String(pageA.id))
+    expect(body.data.navigation[0]).not.toHaveProperty('page')
+    expect(body.data.navigation[1]).not.toHaveProperty('route')
+    expect(body.data.navigation[2]).not.toHaveProperty('url')
   })
 
   test('returns stable default theme and automatic navigation mode without customization', async () => {
