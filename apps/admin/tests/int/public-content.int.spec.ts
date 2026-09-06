@@ -13,6 +13,11 @@ import {
 
 let payload: Payload
 
+const asRequestUser = <T extends Record<string, unknown>>(user: T) => ({
+  ...user,
+  collection: 'users' as const,
+})
+
 const richTextFixture = {
   root: {
     type: 'root',
@@ -57,6 +62,8 @@ const json = async (response: Response) => (await response.json()) as any
 describe('public content API', () => {
   let organizationA: any
   let organizationB: any
+  let editorA: any
+  let editorB: any
 
   beforeAll(async () => {
     payload = await getPayload({ config })
@@ -100,10 +107,45 @@ describe('public content API', () => {
       } as any,
     })
 
+    editorA = await payload.create({
+      collection: 'users',
+      overrideAccess: true,
+      data: {
+        email: 'public-editor-alpha@assostack.test',
+        password: 'test-password-123',
+        name: 'Public Editor Alpha',
+        platformRoles: ['user'],
+        organizations: [
+          {
+            organization: organizationA.id,
+            roles: ['editor'],
+          },
+        ],
+      } as any,
+    })
+
+    editorB = await payload.create({
+      collection: 'users',
+      overrideAccess: true,
+      data: {
+        email: 'public-editor-beta@assostack.test',
+        password: 'test-password-123',
+        name: 'Public Editor Beta',
+        platformRoles: ['user'],
+        organizations: [
+          {
+            organization: organizationB.id,
+            roles: ['editor'],
+          },
+        ],
+      } as any,
+    })
+
     await payload.create({
       collection: 'pages',
       draft: false,
-      overrideAccess: true,
+      overrideAccess: false,
+      user: asRequestUser(editorA) as any,
       data: {
         title: 'Alpha Home',
         slug: 'home',
@@ -117,7 +159,8 @@ describe('public content API', () => {
     await payload.create({
       collection: 'pages',
       draft: true,
-      overrideAccess: true,
+      overrideAccess: false,
+      user: asRequestUser(editorA) as any,
       data: {
         title: 'Alpha Secret Draft',
         slug: 'secret-draft',
@@ -130,7 +173,8 @@ describe('public content API', () => {
     await payload.create({
       collection: 'pages',
       draft: false,
-      overrideAccess: true,
+      overrideAccess: false,
+      user: asRequestUser(editorB) as any,
       data: {
         title: 'Beta Home',
         slug: 'home',
@@ -143,7 +187,8 @@ describe('public content API', () => {
     await payload.create({
       collection: 'posts',
       draft: false,
-      overrideAccess: true,
+      overrideAccess: false,
+      user: asRequestUser(editorA) as any,
       data: {
         title: 'Alpha News',
         slug: 'alpha-news',
@@ -157,7 +202,8 @@ describe('public content API', () => {
     await payload.create({
       collection: 'posts',
       draft: true,
-      overrideAccess: true,
+      overrideAccess: false,
+      user: asRequestUser(editorA) as any,
       data: {
         title: 'Alpha Draft News',
         slug: 'draft-news',
