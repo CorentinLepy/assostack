@@ -1,0 +1,73 @@
+---
+import PublicPostCard from '../../components/PublicPostCard.astro'
+import PublicSiteLayout from '../../layouts/PublicSiteLayout.astro'
+import { getPublicCopy } from '../../lib/public-copy'
+import {
+  getPublicOrganization,
+  isPublicContentConfigured,
+  listPublicPages,
+  listPublicPosts,
+} from '../../lib/public-content'
+import '../../styles/global.css'
+import '../../styles/news.css'
+
+const configured = isPublicContentConfigured()
+const publicSite = configured
+  ? await Promise.all([getPublicOrganization(), listPublicPages(), listPublicPosts()]).then(
+      ([organization, pages, posts]) => ({ organization, pages, posts }),
+    )
+  : null
+const copy = publicSite ? getPublicCopy(publicSite.organization.locale) : null
+---
+
+{
+  publicSite && copy ? (
+    <PublicSiteLayout
+      organization={publicSite.organization}
+      pages={publicSite.pages}
+      title={copy.news}
+      description={copy.newsDescription}
+    >
+      <section class="news-index">
+        <header class="news-index__header">
+          <p class="eyebrow">{publicSite.organization.identity.siteTitle}</p>
+          <h1>{copy.news}</h1>
+          <p class="news-index__intro">{copy.newsDescription}</p>
+        </header>
+
+        {publicSite.posts.length > 0 ? (
+          <div class="news-grid">
+            {publicSite.posts.map((post) => (
+              <PublicPostCard
+                post={post}
+                locale={publicSite.organization.locale}
+                timezone={publicSite.organization.timezone}
+              />
+            ))}
+          </div>
+        ) : (
+          <p class="news-empty">{copy.noNews}</p>
+        )}
+      </section>
+    </PublicSiteLayout>
+  ) : (
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width" />
+        <meta name="robots" content="noindex" />
+        <title>News — AssoStack</title>
+      </head>
+      <body>
+        <main>
+          <section class="hero">
+            <p class="eyebrow">AssoStack</p>
+            <h1>Public news is available when an organization is configured.</h1>
+            <p class="lead">Set the public content API and organization environment variables to build an organization website.</p>
+            <div class="actions"><a href="/">Back to AssoStack</a></div>
+          </section>
+        </main>
+      </body>
+    </html>
+  )
+}
