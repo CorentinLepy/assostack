@@ -96,15 +96,72 @@ const fullPages = {
       image: null,
       title: 'About Demo Association',
     },
+    sections: [],
   },
   home: {
     ...pages[1],
-    content: richText('This homepage was generated from published CMS content.'),
+    content: {},
     meta: {
       description: 'Demo association homepage.',
       image: null,
       title: null,
     },
+    sections: [
+      {
+        type: 'hero',
+        alignment: 'left',
+        action: {
+          external: false,
+          href: '/about',
+          label: 'Meet the association',
+          newTab: false,
+        },
+        eyebrow: 'Demo Association',
+        heading: 'A homepage assembled from reusable sections',
+        image: null,
+        text: 'Editors can compose a public page without changing Astro code.',
+      },
+      {
+        type: 'richText',
+        content: richText('This structured rich-text section came through the public API.'),
+      },
+      {
+        type: 'cards',
+        heading: 'What we do',
+        intro: 'Reusable cards remain generic across organizations.',
+        items: [
+          {
+            action: null,
+            image: null,
+            text: 'A first reusable information card.',
+            title: 'Community',
+          },
+          {
+            action: {
+              external: true,
+              href: 'https://example.com/events',
+              label: 'See events',
+              newTab: true,
+            },
+            image: null,
+            text: 'A card can expose a safe external action.',
+            title: 'Events',
+          },
+        ],
+      },
+      {
+        type: 'callout',
+        action: {
+          external: false,
+          href: '/about',
+          label: 'Learn more',
+          newTab: false,
+        },
+        heading: 'Ready to participate?',
+        text: 'The callout is another constrained reusable section.',
+        tone: 'accent',
+      },
+    ],
   },
 }
 
@@ -186,16 +243,24 @@ try {
   const homeHTML = await readFile(path.join(webRoot, 'dist', 'index.html'), 'utf8')
   const aboutHTML = await readFile(path.join(webRoot, 'dist', 'about', 'index.html'), 'utf8')
 
-  if (!homeHTML.includes('Welcome to Demo Association')) {
-    throw new Error('Configured build did not render the published home page.')
+  if (!homeHTML.includes('A homepage assembled from reusable sections')) {
+    throw new Error('Configured build did not render the structured home hero.')
   }
 
-  if (!homeHTML.includes('This homepage was generated from published CMS content.')) {
-    throw new Error('Configured build did not render safe home rich text.')
+  if (!homeHTML.includes('This structured rich-text section came through the public API.')) {
+    throw new Error('Configured build did not render a structured rich-text section.')
+  }
+
+  if (!homeHTML.includes('Community') || !homeHTML.includes('Ready to participate?')) {
+    throw new Error('Configured build did not render cards and callout sections.')
   }
 
   if (!aboutHTML.includes('About us')) {
     throw new Error('Configured build did not generate the published /about page.')
+  }
+
+  if (!aboutHTML.includes('This page was generated from the public content API contract.')) {
+    throw new Error('Configured build did not preserve rich-text-only page fallback rendering.')
   }
 
   if (!homeHTML.includes('Demo Association Web')) {
@@ -212,6 +277,10 @@ try {
     throw new Error('Configured build did not render the external navigation target.')
   }
 
+  if (!homeHTML.includes('target="_blank"') || !homeHTML.includes('noopener noreferrer')) {
+    throw new Error('Configured build did not protect new-tab external links.')
+  }
+
   if (!homeHTML.includes('--as-color-primary:#123456')) {
     throw new Error('Configured build did not apply public theme color tokens.')
   }
@@ -220,7 +289,7 @@ try {
     throw new Error('Configured build did not apply the public radius token.')
   }
 
-  console.log('Configured organization build rendered public identity, navigation and theme successfully.')
+  console.log('Configured organization build rendered page sections, fallback content and site settings successfully.')
 } finally {
   await new Promise((resolve, reject) =>
     server.close((error) => (error ? reject(error) : resolve())),
