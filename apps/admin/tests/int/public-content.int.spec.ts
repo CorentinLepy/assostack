@@ -234,11 +234,30 @@ describe('public content API', () => {
       slug: 'public-alpha',
       locale: 'fr-FR',
       timezone: 'Europe/Paris',
+      identity: {
+        logo: null,
+        siteTitle: 'Public Association Alpha',
+        tagline: null,
+      },
+      navigation: [],
       publicContact: {
         email: 'contact@alpha.test',
         phone: null,
       },
+      theme: {
+        colors: {
+          accent: '#2563EB',
+          background: '#FBFBF9',
+          muted: '#6B7280',
+          primary: '#161616',
+          surface: '#F7F7F5',
+          text: '#161616',
+        },
+        fontFamily: 'system',
+        radius: 'medium',
+      },
       website: {
+        navigationMode: 'automatic',
         primaryDomain: 'alpha.test',
       },
     })
