@@ -106,5 +106,11 @@ jobs:
       - name: Apply migrations to clean PostgreSQL
         run: pnpm db:migrate
 
+      - name: Roll back latest migration batch
+        run: pnpm db:migrate:down
+
+      - name: Re-apply migrations after rollback
+        run: pnpm db:migrate
+
       - name: Report migration status
         run: pnpm db:migrate:status
