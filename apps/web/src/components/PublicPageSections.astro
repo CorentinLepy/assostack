@@ -4,13 +4,24 @@ import '../styles/sections.css'
 import PublicRichText from './PublicRichText.astro'
 
 interface Props {
+  pageSummary?: string | null
+  pageTitle: string
   sections: PublicPageSection[]
 }
 
-const { sections } = Astro.props
+const { pageSummary, pageTitle, sections } = Astro.props
+const firstHeroIndex = sections.findIndex((section) => section.type === 'hero')
 ---
 
 <div class="page-sections">
+  {
+    firstHeroIndex === -1 && (
+      <header class="structured-page-intro">
+        <h1>{pageTitle}</h1>
+        {pageSummary && <p class="lead">{pageSummary}</p>}
+      </header>
+    )
+  }
   {
     sections.map((section, index) => {
       if (section.type === 'hero') {
@@ -19,7 +30,11 @@ const { sections } = Astro.props
             <div class="section-shell hero-grid">
               <div class="hero-copy">
                 {section.eyebrow && <p class="eyebrow">{section.eyebrow}</p>}
-                <h1>{section.heading}</h1>
+                {index === firstHeroIndex ? (
+                  <h1>{section.heading}</h1>
+                ) : (
+                  <h2 class="hero-heading">{section.heading}</h2>
+                )}
                 {section.text && <p class="lead">{section.text}</p>}
                 {section.action && (
                   <a
@@ -29,6 +44,7 @@ const { sections } = Astro.props
                     rel={section.action.newTab ? 'noopener noreferrer' : undefined}
                   >
                     {section.action.label}
+                    {section.action.external && <span class="sr-only"> (external)</span>}
                   </a>
                 )}
               </div>
@@ -73,6 +89,7 @@ const { sections } = Astro.props
                   rel={section.action.newTab ? 'noopener noreferrer' : undefined}
                 >
                   {section.action.label}
+                  {section.action.external && <span class="sr-only"> (external)</span>}
                 </a>
               )}
             </div>
@@ -113,6 +130,7 @@ const { sections } = Astro.props
                           rel={card.action.newTab ? 'noopener noreferrer' : undefined}
                         >
                           {card.action.label}
+                          {card.action.external && <span class="sr-only"> (external)</span>}
                         </a>
                       )}
                     </div>
