@@ -13,8 +13,9 @@ const blocks = toPublicTextBlocks(content)
   {
     blocks.map((block) => {
       if (block.kind === 'heading') {
-        const Heading = `h${block.level}` as 'h2' | 'h3' | 'h4'
-        return <Heading>{block.text}</Heading>
+        if (block.level === 3) return <h3>{block.text}</h3>
+        if (block.level === 4) return <h4>{block.text}</h4>
+        return <h2>{block.text}</h2>
       }
 
       return <p>{block.text}</p>
