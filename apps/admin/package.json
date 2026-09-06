@@ -7,7 +7,7 @@
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev --port 3001",
     "build": "cross-env NODE_OPTIONS=--no-deprecation next build",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start --port 3001",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "pnpm generate:types && tsc --noEmit",
     "test": "pnpm test:int",
     "test:int": "cross-env NODE_ENV=development vitest run --config vitest.config.mts",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",

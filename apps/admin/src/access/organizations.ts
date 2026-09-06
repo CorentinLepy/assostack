@@ -104,6 +104,25 @@ export const organizationRoleAccess = (allowedRoles: readonly OrganizationRole[]
   }
 }
 
+export const organizationRecordAccess = (allowedRoles: readonly OrganizationRole[]): Access => {
+  return ({ req }: AccessArgs): AccessResult => {
+    if (isPlatformAdmin(req.user)) {
+      return true
+    }
+
+    const organizationIDs = getOrganizationIDsForRoles(req.user, allowedRoles)
+    if (organizationIDs.length === 0) {
+      return false
+    }
+
+    return {
+      id: {
+        in: organizationIDs,
+      },
+    }
+  }
+}
+
 export const canManageAnyOrganization = (
   user: unknown,
   allowedRoles: readonly OrganizationRole[] = ['organization-admin', 'editor'],

@@ -42,7 +42,7 @@ describe('tenant isolation', () => {
         name: 'Association Alpha',
         slug: 'association-alpha',
         status: 'active',
-      },
+      } as any,
     })
 
     organizationB = await payload.create({
@@ -52,7 +52,7 @@ describe('tenant isolation', () => {
         name: 'Association Beta',
         slug: 'association-beta',
         status: 'active',
-      },
+      } as any,
     })
 
     adminA = await payload.create({
