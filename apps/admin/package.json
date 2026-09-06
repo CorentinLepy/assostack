@@ -8,12 +8,15 @@
     "build": "cross-env NODE_OPTIONS=--no-deprecation next build",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start --port 3001",
     "typecheck": "tsc --noEmit",
+    "test": "pnpm test:int",
+    "test:int": "cross-env NODE_ENV=development vitest run --config vitest.config.mts",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.88.0",
     "@payloadcms/next": "3.88.0",
+    "@payloadcms/plugin-multi-tenant": "3.88.0",
     "@payloadcms/richtext-lexical": "3.88.0",
     "@payloadcms/ui": "3.88.0",
     "cross-env": "7.0.3",
@@ -28,6 +31,8 @@
     "@types/node": "^24.0.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vite-tsconfig-paths": "6.0.5",
+    "vitest": "4.0.18"
   }
 }
