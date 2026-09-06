@@ -12,6 +12,7 @@ import type {
   PublicSEO,
   PublicSiteTheme,
 } from '../../../../packages/contracts/src/public-content'
+import { resolveBuiltInPublicRoute } from '../cms/public-routes'
 
 const asRecord = (value: unknown): Record<string, any> | null =>
   value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -131,6 +132,20 @@ const serializeAction = (value: unknown, organizationID: unknown): PublicAction 
       href,
       label,
       newTab: action.newTab === true,
+    }
+  }
+
+  if (action.kind === 'route') {
+    const href = resolveBuiltInPublicRoute(action.route)
+    if (!href) {
+      return null
+    }
+
+    return {
+      external: false,
+      href,
+      label,
+      newTab: false,
     }
   }
 
