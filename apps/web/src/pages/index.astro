@@ -46,7 +46,11 @@ const pillars = [
       description={publicSite.home.meta.description ?? publicSite.home.summary}
     >
       {publicSite.home.sections.length > 0 ? (
-        <PublicPageSections sections={publicSite.home.sections} />
+        <PublicPageSections
+          pageTitle={publicSite.home.title}
+          pageSummary={publicSite.home.summary}
+          sections={publicSite.home.sections}
+        />
       ) : (
         <article class="content-page content-page--home">
           <p class="eyebrow">{publicSite.organization.identity.siteTitle}</p>
