@@ -43,6 +43,21 @@ const richTextFixture = (text: string) => ({
   },
 })
 
+const containsForbiddenKey = (value: unknown, forbiddenKeys: ReadonlySet<string>): boolean => {
+  if (Array.isArray(value)) {
+    return value.some((item) => containsForbiddenKey(item, forbiddenKeys))
+  }
+
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  return Object.entries(value as Record<string, unknown>).some(
+    ([key, nestedValue]) =>
+      forbiddenKeys.has(key) || containsForbiddenKey(nestedValue, forbiddenKeys),
+  )
+}
+
 const transparentPixel = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
   'base64',
@@ -281,7 +296,12 @@ describe('structured public page sections', () => {
         newTab: false,
       },
     })
-    expect(body.data.sections[0].image.alt).toBe('Alpha section image')
+    expect(body.data.sections[0].image).toEqual({
+      alt: 'Alpha section image',
+      height: 1,
+      url: expect.stringContaining('/api/media/file/sections-alpha.png'),
+      width: 1,
+    })
     expect(body.data.sections[2].items[0].action).toEqual({
       external: true,
       href: 'https://example.com/community',
@@ -290,10 +310,14 @@ describe('structured public page sections', () => {
     })
     expect(body.data.sections[3].tone).toBe('accent')
 
-    const serialized = JSON.stringify(body.data.sections)
-    expect(serialized).not.toContain(String(organizationA.id))
-    expect(serialized).not.toContain(String(targetA.id))
-    expect(serialized).not.toContain('blockType')
+    expect(
+      containsForbiddenKey(
+        body.data.sections,
+        new Set(['id', 'organization', 'blockType']),
+      ),
+    ).toBe(false)
+    expect(body.data.sections[0].action).not.toHaveProperty('page')
+    expect(body.data.sections[2].items[0].action).not.toHaveProperty('url')
   })
 
   test('rejects a page section linking to a page from another organization', async () => {
