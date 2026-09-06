@@ -135,7 +135,8 @@ describe('structured public page sections', () => {
 
     mediaA = await payload.create({
       collection: 'media',
-      overrideAccess: true,
+      overrideAccess: false,
+      user: asRequestUser(editorA) as any,
       data: {
         alt: 'Alpha section image',
         organization: organizationA.id,
@@ -150,7 +151,8 @@ describe('structured public page sections', () => {
 
     mediaB = await payload.create({
       collection: 'media',
-      overrideAccess: true,
+      overrideAccess: false,
+      user: asRequestUser(editorB) as any,
       data: {
         alt: 'Beta section image',
         organization: organizationB.id,
