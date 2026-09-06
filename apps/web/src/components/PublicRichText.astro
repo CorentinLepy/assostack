@@ -1,0 +1,24 @@
+---
+import { toPublicTextBlocks } from '../lib/rich-text'
+
+interface Props {
+  content: unknown
+}
+
+const { content } = Astro.props
+const blocks = toPublicTextBlocks(content)
+---
+
+<div class="rich-text">
+  {
+    blocks.map((block) => {
+      if (block.kind === 'heading') {
+        if (block.level === 3) return <h3>{block.text}</h3>
+        if (block.level === 4) return <h4>{block.text}</h4>
+        return <h2>{block.text}</h2>
+      }
+
+      return <p>{block.text}</p>
+    })
+  }
+</div>

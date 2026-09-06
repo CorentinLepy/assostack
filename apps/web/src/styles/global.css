@@ -18,6 +18,10 @@ body {
   margin: 0;
 }
 
+a {
+  color: inherit;
+}
+
 main {
   width: min(1120px, calc(100% - 2rem));
   margin: 0 auto;
@@ -113,6 +117,126 @@ article p {
   line-height: 1.5;
 }
 
+.organization-site {
+  min-height: 100vh;
+  background: #fbfbf9;
+}
+
+.site-header {
+  border-bottom: 1px solid #d9d9d2;
+  background: rgba(251, 251, 249, 0.96);
+}
+
+.site-header__inner,
+.site-footer__inner {
+  width: min(1120px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.site-header__inner {
+  display: flex;
+  min-height: 4.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.site-brand {
+  font-size: 1.05rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-nav a {
+  font-size: 0.95rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.site-nav a:hover,
+.site-nav a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.site-main {
+  padding-top: 5rem;
+}
+
+.content-page {
+  min-height: 0;
+  max-width: 820px;
+  padding: 0 0 5rem;
+  border: 0;
+}
+
+.content-page h1 {
+  max-width: 14ch;
+}
+
+.content-page .lead {
+  margin-bottom: 2.5rem;
+}
+
+.rich-text {
+  max-width: 720px;
+  margin-top: 3rem;
+}
+
+.rich-text h2,
+.rich-text h3,
+.rich-text h4 {
+  margin: 2.5rem 0 1rem;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+
+.rich-text h2 {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+}
+
+.rich-text h3 {
+  font-size: clamp(1.45rem, 3vw, 2rem);
+}
+
+.rich-text h4 {
+  font-size: 1.25rem;
+}
+
+.rich-text p {
+  max-width: 68ch;
+  margin: 0 0 1.25rem;
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+
+.site-footer {
+  margin-top: auto;
+  border-top: 1px solid #d9d9d2;
+}
+
+.site-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  align-items: center;
+  padding: 2rem 0;
+  font-size: 0.9rem;
+}
+
+.site-footer a {
+  text-underline-offset: 0.2em;
+}
+
 @media (max-width: 720px) {
   main {
     padding-top: 3rem;
@@ -124,5 +248,20 @@ article p {
 
   .grid {
     grid-template-columns: 1fr;
+  }
+
+  .site-header__inner {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1rem 0;
+  }
+
+  .site-nav {
+    gap: 0.75rem 1rem;
+  }
+
+  .site-main {
+    padding-top: 3.5rem;
   }
 }

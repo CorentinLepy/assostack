@@ -13,6 +13,7 @@ import { Organizations } from './collections/Organizations'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
+import { publicContentEndpoints } from './public-api/endpoints'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -37,6 +38,7 @@ export default buildConfig({
     push: shouldPushSchema,
   }),
   editor: lexicalEditor(),
+  endpoints: publicContentEndpoints,
   plugins: [
     multiTenantPlugin({
       collections: {

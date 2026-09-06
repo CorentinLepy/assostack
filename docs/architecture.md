@@ -83,6 +83,37 @@ AssoStack should ultimately support both:
 - **single-tenant self-hosting** — one organization per deployment;
 - **multi-tenant hosted deployments** — multiple organizations sharing an installation with strong logical isolation.
 
+## Public content delivery boundary
+
+The public website does not consume the generic Payload collection APIs directly. Editorial collections contain drafts, tenant relationships and operational fields that are not a stable public contract.
+
+AssoStack therefore exposes an explicit versioned public-content boundary:
+
+```text
+Payload CMS / PostgreSQL
+        |
+        | published + organization-scoped queries
+        v
+Public content API v1
+        |
+        | minimal sanitized DTOs
+        v
+Astro static build
+        |
+        v
+Public website
+```
+
+This gives the public site three useful properties:
+
+- drafts and editorial metadata stay behind the administrative boundary;
+- the frontend depends on a small versioned contract instead of Payload's internal document shape;
+- the built static site can remain online during a temporary backend/CRM outage.
+
+When an Astro organization build is configured, backend unavailability is a build failure rather than a silent fallback to incomplete content. Without organization build configuration, the repository still builds the generic AssoStack project landing page for development and CI.
+
+See `docs/public-content.md` for the current public API and rendering rules.
+
 ## Team SMH boundary
 
 Team SMH configuration can include:
