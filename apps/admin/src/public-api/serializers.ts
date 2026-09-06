@@ -1,11 +1,13 @@
 import type {
   PublicMedia,
+  PublicNavigationItem,
   PublicOrganization,
   PublicPage,
   PublicPageSummary,
   PublicPost,
   PublicPostSummary,
   PublicSEO,
+  PublicSiteTheme,
 } from '../../../../packages/contracts/src/public-content'
 
 const asRecord = (value: unknown): Record<string, any> | null =>
@@ -18,6 +20,22 @@ const asString = (value: unknown): string | null =>
 
 const asNumber = (value: unknown): number | null =>
   typeof value === 'number' && Number.isFinite(value) ? value : null
+
+const relationshipID = (value: unknown): number | string | null => {
+  if (typeof value === 'number' || typeof value === 'string') {
+    return value
+  }
+
+  const record = asRecord(value)
+  return typeof record?.id === 'number' || typeof record?.id === 'string' ? record.id : null
+}
+
+const sameRelationshipID = (left: unknown, right: unknown): boolean => {
+  const leftID = relationshipID(left)
+  const rightID = relationshipID(right)
+
+  return leftID !== null && rightID !== null && String(leftID) === String(rightID)
+}
 
 const resolveMediaURL = (url: string, serverURL: string): string => {
   try {
@@ -47,6 +65,19 @@ export const serializePublicMedia = (value: unknown, serverURL: string): PublicM
   }
 }
 
+const serializeOwnedMedia = (
+  value: unknown,
+  organizationID: unknown,
+  serverURL: string,
+): PublicMedia | null => {
+  const media = asRecord(value)
+  if (!media || !sameRelationshipID(media.organization, organizationID)) {
+    return null
+  }
+
+  return serializePublicMedia(media, serverURL)
+}
+
 const serializeSEO = (value: unknown, serverURL: string): PublicSEO => {
   const meta = asRecord(value)
 
@@ -57,22 +88,154 @@ const serializeSEO = (value: unknown, serverURL: string): PublicSEO => {
   }
 }
 
-export const serializePublicOrganization = (value: unknown): PublicOrganization => {
+const safeExternalURL = (value: unknown): string | null => {
+  const raw = asString(value)
+  if (!raw) {
+    return null
+  }
+
+  try {
+    const url = new URL(raw)
+    if (
+      (url.protocol !== 'https:' && url.protocol !== 'http:') ||
+      url.username.length > 0 ||
+      url.password.length > 0
+    ) {
+      return null
+    }
+
+    return url.toString()
+  } catch {
+    return null
+  }
+}
+
+const serializeNavigation = (
+  value: unknown,
+  organizationID: unknown,
+): PublicNavigationItem[] => {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  const items: PublicNavigationItem[] = []
+
+  for (const rawItem of value) {
+    const item = asRecord(rawItem)
+    const label = asString(item?.label)
+    if (!item || !label) {
+      continue
+    }
+
+    if (item.kind === 'external') {
+      const href = safeExternalURL(item.url)
+      if (!href) {
+        continue
+      }
+
+      items.push({
+        external: true,
+        href,
+        label,
+        newTab: item.newTab === true,
+      })
+      continue
+    }
+
+    const page = asRecord(item.page)
+    const slug = asString(page?.slug)
+    if (
+      !page ||
+      !slug ||
+      page._status !== 'published' ||
+      !sameRelationshipID(page.organization, organizationID)
+    ) {
+      continue
+    }
+
+    items.push({
+      external: false,
+      href: slug === 'home' ? '/' : `/${slug}`,
+      label,
+      newTab: false,
+    })
+  }
+
+  return items
+}
+
+const defaultTheme: PublicSiteTheme = {
+  colors: {
+    accent: '#2563EB',
+    background: '#FBFBF9',
+    muted: '#6B7280',
+    primary: '#161616',
+    surface: '#F7F7F5',
+    text: '#161616',
+  },
+  fontFamily: 'system',
+  radius: 'medium',
+}
+
+const colorOrDefault = (value: unknown, fallback: string): string => {
+  const color = asString(value)
+  return color && /^#[0-9a-fA-F]{6}$/.test(color) ? color.toUpperCase() : fallback
+}
+
+const serializeTheme = (value: unknown): PublicSiteTheme => {
+  const theme = asRecord(value) ?? {}
+  const fontFamily = ['system', 'humanist', 'serif', 'mono'].includes(theme.fontFamily)
+    ? (theme.fontFamily as PublicSiteTheme['fontFamily'])
+    : defaultTheme.fontFamily
+  const radius = ['none', 'small', 'medium', 'large'].includes(theme.radius)
+    ? (theme.radius as PublicSiteTheme['radius'])
+    : defaultTheme.radius
+
+  return {
+    colors: {
+      accent: colorOrDefault(theme.accentColor, defaultTheme.colors.accent),
+      background: colorOrDefault(theme.backgroundColor, defaultTheme.colors.background),
+      muted: colorOrDefault(theme.mutedColor, defaultTheme.colors.muted),
+      primary: colorOrDefault(theme.primaryColor, defaultTheme.colors.primary),
+      surface: colorOrDefault(theme.surfaceColor, defaultTheme.colors.surface),
+      text: colorOrDefault(theme.textColor, defaultTheme.colors.text),
+    },
+    fontFamily,
+    radius,
+  }
+}
+
+export const serializePublicOrganization = (
+  value: unknown,
+  serverURL: string,
+): PublicOrganization => {
   const organization = asRecord(value) ?? {}
   const settings = asRecord(organization.settings) ?? {}
   const publicContact = asRecord(settings.publicContact) ?? {}
   const website = asRecord(settings.website) ?? {}
+  const name = asString(organization.name) ?? ''
+  const navigationMode = website.navigationMode === 'manual' ? 'manual' : 'automatic'
 
   return {
-    name: asString(organization.name) ?? '',
+    name,
     slug: asString(organization.slug) ?? '',
     locale: asString(settings.locale) ?? 'en',
     timezone: asString(settings.timezone) ?? 'UTC',
+    identity: {
+      logo: serializeOwnedMedia(website.logo, organization.id, serverURL),
+      siteTitle: asString(website.siteTitle) ?? name,
+      tagline: asString(website.tagline),
+    },
+    navigation: navigationMode === 'manual'
+      ? serializeNavigation(website.navigation, organization.id)
+      : [],
     publicContact: {
       email: asString(publicContact.email),
       phone: asString(publicContact.phone),
     },
+    theme: serializeTheme(website.theme),
     website: {
+      navigationMode,
       primaryDomain: asString(website.primaryDomain),
     },
   }
