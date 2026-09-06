@@ -7,6 +7,7 @@
     "dev": "astro dev --port 4321",
     "build": "astro build",
     "preview": "astro preview",
+    "test": "node tests/public-build.mjs",
     "typecheck": "astro check"
   },
   "dependencies": {
