@@ -1,5 +1,5 @@
 import type { CollectionBeforeChangeHook } from 'payload'
-import { Forbidden } from 'payload/errors'
+import { Forbidden } from 'payload'
 
 import {
   getRelationshipID,
