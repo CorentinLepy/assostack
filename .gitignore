@@ -1,0 +1,21 @@
+node_modules/
+.pnpm-store/
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+
+# Build outputs
+.next/
+dist/
+.astro/
+coverage/
+
+# Payload generated/runtime files
+apps/admin/media/
+apps/admin/src/payload-types.ts
+
+# Local IDE
+.vscode/
+.idea/

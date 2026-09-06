@@ -1,0 +1,66 @@
+---
+import '../styles/global.css'
+
+const pillars = [
+  {
+    title: 'Website',
+    description: 'Fast, accessible public websites powered by Astro and organization-managed content.',
+  },
+  {
+    title: 'CRM',
+    description: 'Contacts, memberships, events and operational workflows in one coherent data model.',
+  },
+  {
+    title: 'Modules',
+    description: 'Enable only what an organization needs: volunteers, sponsors, donations, equipment and more.',
+  },
+  {
+    title: 'Open platform',
+    description: 'Self-hostable, API-first and designed for replaceable integrations instead of vendor lock-in.',
+  },
+]
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta
+      name="description"
+      content="AssoStack is an open-source platform for associations and small organizations."
+    />
+    <title>AssoStack — Open platform for organizations</title>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <p class="eyebrow">AssoStack · pre-alpha</p>
+        <h1>One open stack for organizations that need more than a website.</h1>
+        <p class="lead">
+          AssoStack combines a public website, a modular CRM and integration-ready tooling in a
+          self-hostable platform built for associations and small organizations.
+        </p>
+        <div class="actions">
+          <a href="https://github.com/CorentinLepy/assostack">View the source</a>
+          <a class="secondary" href="#foundation">Explore the foundation</a>
+        </div>
+      </section>
+
+      <section id="foundation" class="grid" aria-label="Product foundations">
+        {pillars.map((pillar) => (
+          <article>
+            <h2>{pillar.title}</h2>
+            <p>{pillar.description}</p>
+          </article>
+        ))}
+      </section>
+
+      <section class="status">
+        <p>
+          <strong>Current milestone:</strong> 0.1 Foundation — Astro, Payload, PostgreSQL, tenancy,
+          authentication and CI.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
