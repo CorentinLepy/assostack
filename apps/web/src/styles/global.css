@@ -117,14 +117,41 @@ article p {
   line-height: 1.5;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .organization-site {
   min-height: 100vh;
-  background: #fbfbf9;
+  color: var(--as-color-text, #161616);
+  background: var(--as-color-background, #fbfbf9);
+  font-family: var(
+    --as-font-family,
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
+  );
+}
+
+.organization-site a:focus-visible {
+  outline: 3px solid var(--as-color-accent, #2563eb);
+  outline-offset: 3px;
+  border-radius: calc(var(--as-radius, 0.75rem) / 2);
+}
+
+.organization-site .eyebrow {
+  color: var(--as-color-primary, #161616);
 }
 
 .site-header {
-  border-bottom: 1px solid #d9d9d2;
-  background: rgba(251, 251, 249, 0.96);
+  border-bottom: 1px solid var(--as-color-muted, #6b7280);
+  background: var(--as-color-surface, #f7f7f5);
 }
 
 .site-header__inner,
@@ -142,9 +169,36 @@ article p {
 }
 
 .site-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: var(--as-color-primary, #161616);
   font-size: 1.05rem;
   font-weight: 800;
   text-decoration: none;
+}
+
+.site-brand__logo {
+  display: block;
+  width: auto;
+  max-width: 9rem;
+  height: 2.75rem;
+  object-fit: contain;
+  border-radius: var(--as-radius, 0.75rem);
+}
+
+.site-brand__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.site-brand__copy small {
+  max-width: 34ch;
+  color: var(--as-color-muted, #6b7280);
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.3;
 }
 
 .site-nav {
@@ -162,9 +216,10 @@ article p {
   text-decoration: none;
 }
 
-.site-nav a:hover,
-.site-nav a:focus-visible {
+.site-nav a:hover {
+  color: var(--as-color-primary, #161616);
   text-decoration: underline;
+  text-decoration-color: var(--as-color-accent, #2563eb);
   text-underline-offset: 0.25em;
 }
 
@@ -181,10 +236,12 @@ article p {
 
 .content-page h1 {
   max-width: 14ch;
+  color: var(--as-color-primary, #161616);
 }
 
 .content-page .lead {
   margin-bottom: 2.5rem;
+  color: var(--as-color-muted, #6b7280);
 }
 
 .rich-text {
@@ -196,6 +253,7 @@ article p {
 .rich-text h3,
 .rich-text h4 {
   margin: 2.5rem 0 1rem;
+  color: var(--as-color-primary, #161616);
   line-height: 1.15;
   letter-spacing: -0.025em;
 }
@@ -221,7 +279,8 @@ article p {
 
 .site-footer {
   margin-top: auto;
-  border-top: 1px solid #d9d9d2;
+  border-top: 1px solid var(--as-color-muted, #6b7280);
+  background: var(--as-color-surface, #f7f7f5);
 }
 
 .site-footer__inner {
