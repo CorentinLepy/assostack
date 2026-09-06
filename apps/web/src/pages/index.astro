@@ -1,4 +1,5 @@
 ---
+import PublicPageSections from '../components/PublicPageSections.astro'
 import PublicRichText from '../components/PublicRichText.astro'
 import PublicSiteLayout from '../layouts/PublicSiteLayout.astro'
 import {
@@ -44,12 +45,16 @@ const pillars = [
       title={publicSite.home.meta.title ?? publicSite.organization.identity.siteTitle}
       description={publicSite.home.meta.description ?? publicSite.home.summary}
     >
-      <article class="content-page content-page--home">
-        <p class="eyebrow">{publicSite.organization.identity.siteTitle}</p>
-        <h1>{publicSite.home.title}</h1>
-        {publicSite.home.summary && <p class="lead">{publicSite.home.summary}</p>}
-        <PublicRichText content={publicSite.home.content} />
-      </article>
+      {publicSite.home.sections.length > 0 ? (
+        <PublicPageSections sections={publicSite.home.sections} />
+      ) : (
+        <article class="content-page content-page--home">
+          <p class="eyebrow">{publicSite.organization.identity.siteTitle}</p>
+          <h1>{publicSite.home.title}</h1>
+          {publicSite.home.summary && <p class="lead">{publicSite.home.summary}</p>}
+          <PublicRichText content={publicSite.home.content} />
+        </article>
+      )}
     </PublicSiteLayout>
   ) : (
     <html lang="en">
