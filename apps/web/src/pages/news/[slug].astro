@@ -2,7 +2,6 @@
 import type {
   PublicOrganization,
   PublicPageSummary,
-  PublicPostSummary,
 } from '../../../../../packages/contracts/src/public-content'
 import PublicRichText from '../../components/PublicRichText.astro'
 import PublicSiteLayout from '../../layouts/PublicSiteLayout.astro'
@@ -35,7 +34,6 @@ export async function getStaticPaths() {
     props: {
       organization,
       pages,
-      postSummary: post,
     },
   }))
 }
@@ -43,10 +41,9 @@ export async function getStaticPaths() {
 interface Props {
   organization: PublicOrganization
   pages: PublicPageSummary[]
-  postSummary: PublicPostSummary
 }
 
-const { organization, pages, postSummary } = Astro.props
+const { organization, pages } = Astro.props
 const slug = Astro.params.slug
 
 if (!slug) {
