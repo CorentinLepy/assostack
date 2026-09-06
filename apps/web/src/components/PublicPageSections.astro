@@ -1,0 +1,148 @@
+---
+import type { PublicPageSection } from '../../../../packages/contracts/src/public-content'
+import '../styles/sections.css'
+import PublicRichText from './PublicRichText.astro'
+
+interface Props {
+  pageSummary?: string | null
+  pageTitle: string
+  sections: PublicPageSection[]
+}
+
+const { pageSummary, pageTitle, sections } = Astro.props
+const firstHeroIndex = sections.findIndex((section) => section.type === 'hero')
+---
+
+<div class="page-sections">
+  {
+    firstHeroIndex === -1 && (
+      <header class="structured-page-intro">
+        <h1>{pageTitle}</h1>
+        {pageSummary && <p class="lead">{pageSummary}</p>}
+      </header>
+    )
+  }
+  {
+    sections.map((section, index) => {
+      if (section.type === 'hero') {
+        return (
+          <section class:list={['page-section', 'hero-section', `align-${section.alignment}`]}>
+            <div class="section-shell hero-grid">
+              <div class="hero-copy">
+                {section.eyebrow && <p class="eyebrow">{section.eyebrow}</p>}
+                {index === firstHeroIndex ? (
+                  <h1>{section.heading}</h1>
+                ) : (
+                  <h2 class="hero-heading">{section.heading}</h2>
+                )}
+                {section.text && <p class="lead">{section.text}</p>}
+                {section.action && (
+                  <a
+                    class="button"
+                    href={section.action.href}
+                    target={section.action.newTab ? '_blank' : undefined}
+                    rel={section.action.newTab ? 'noopener noreferrer' : undefined}
+                  >
+                    {section.action.label}
+                    {section.action.external && <span class="sr-only"> (external)</span>}
+                  </a>
+                )}
+              </div>
+              {section.image && (
+                <img
+                  class="hero-image"
+                  src={section.image.url}
+                  alt={section.image.alt}
+                  width={section.image.width ?? undefined}
+                  height={section.image.height ?? undefined}
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                />
+              )}
+            </div>
+          </section>
+        )
+      }
+
+      if (section.type === 'richText') {
+        return (
+          <section class="page-section rich-text-section">
+            <div class="section-shell section-copy">
+              <PublicRichText content={section.content} />
+            </div>
+          </section>
+        )
+      }
+
+      if (section.type === 'callout') {
+        return (
+          <section class:list={['page-section', 'callout-section', `tone-${section.tone}`]}>
+            <div class="section-shell callout-inner">
+              <div>
+                <h2>{section.heading}</h2>
+                {section.text && <p>{section.text}</p>}
+              </div>
+              {section.action && (
+                <a
+                  class="button"
+                  href={section.action.href}
+                  target={section.action.newTab ? '_blank' : undefined}
+                  rel={section.action.newTab ? 'noopener noreferrer' : undefined}
+                >
+                  {section.action.label}
+                  {section.action.external && <span class="sr-only"> (external)</span>}
+                </a>
+              )}
+            </div>
+          </section>
+        )
+      }
+
+      if (section.type === 'cards') {
+        return (
+          <section class="page-section cards-section">
+            <div class="section-shell">
+              {(section.heading || section.intro) && (
+                <header class="section-heading">
+                  {section.heading && <h2>{section.heading}</h2>}
+                  {section.intro && <p>{section.intro}</p>}
+                </header>
+              )}
+              <div class="card-grid">
+                {section.items.map((card) => (
+                  <article class="content-card">
+                    {card.image && (
+                      <img
+                        src={card.image.url}
+                        alt={card.image.alt}
+                        width={card.image.width ?? undefined}
+                        height={card.image.height ?? undefined}
+                        loading="lazy"
+                      />
+                    )}
+                    <div class="card-body">
+                      <h3>{card.title}</h3>
+                      {card.text && <p>{card.text}</p>}
+                      {card.action && (
+                        <a
+                          class="text-link"
+                          href={card.action.href}
+                          target={card.action.newTab ? '_blank' : undefined}
+                          rel={card.action.newTab ? 'noopener noreferrer' : undefined}
+                        >
+                          {card.action.label}
+                          {card.action.external && <span class="sr-only"> (external)</span>}
+                        </a>
+                      )}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+        )
+      }
+
+      return null
+    })
+  }
+</div>

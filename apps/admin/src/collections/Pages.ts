@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { canManageAnyOrganization, organizationRoleAccess } from '../access/organizations'
+import { pageBlocks } from '../cms/blocks'
 import { contentVersions, publishedAtField, seoFields } from '../cms/fields'
 import { tenantSlugField } from '../cms/slug'
 import { assertOrganizationWriteAccess } from '../hooks/assertOrganizationWriteAccess'
@@ -35,9 +36,22 @@ export const Pages: CollectionConfig = {
       },
     },
     {
+      name: 'sections',
+      type: 'blocks',
+      blocks: pageBlocks,
+      maxRows: 20,
+      admin: {
+        description:
+          'Optional structured page sections. When present, the public website renders these instead of the simple rich-text body.',
+      },
+    },
+    {
       name: 'content',
       type: 'richText',
-      required: true,
+      admin: {
+        description:
+          'Simple rich-text body and backwards-compatible fallback when no structured sections are configured.',
+      },
     },
     seoFields,
     publishedAtField,

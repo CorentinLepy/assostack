@@ -9,12 +9,14 @@ export type PublicMedia = {
   width: number | null
 }
 
-export type PublicNavigationItem = {
+export type PublicAction = {
   external: boolean
   href: string
   label: string
   newTab: boolean
 }
+
+export type PublicNavigationItem = PublicAction
 
 export type PublicSiteTheme = {
   colors: {
@@ -65,9 +67,53 @@ export type PublicPageSummary = {
   updatedAt: string
 }
 
+export type PublicHeroSection = {
+  type: 'hero'
+  alignment: 'left' | 'center'
+  action: PublicAction | null
+  eyebrow: string | null
+  heading: string
+  image: PublicMedia | null
+  text: string | null
+}
+
+export type PublicRichTextSection = {
+  type: 'richText'
+  content: Record<string, unknown>
+}
+
+export type PublicCalloutSection = {
+  type: 'callout'
+  action: PublicAction | null
+  heading: string
+  text: string | null
+  tone: 'neutral' | 'accent'
+}
+
+export type PublicCardItem = {
+  action: PublicAction | null
+  image: PublicMedia | null
+  text: string | null
+  title: string
+}
+
+export type PublicCardsSection = {
+  type: 'cards'
+  heading: string | null
+  intro: string | null
+  items: PublicCardItem[]
+}
+
+export type PublicPageSection =
+  | PublicHeroSection
+  | PublicRichTextSection
+  | PublicCalloutSection
+  | PublicCardsSection
+
 export type PublicPage = PublicPageSummary & {
   content: Record<string, unknown>
   meta: PublicSEO
+  sections: PublicPageSection[]
 }
 
 export type PublicPostSummary = {
