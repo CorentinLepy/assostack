@@ -27,7 +27,14 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "organizations_settings_website_navigation" ALTER COLUMN "kind" SET DATA TYPE text;
+   DELETE FROM "organizations_settings_website_navigation" WHERE "kind" = 'route';
+  UPDATE "pages_blocks_hero" SET "action_kind" = 'page' WHERE "action_kind" = 'route';
+  UPDATE "pages_blocks_callout" SET "action_kind" = 'page' WHERE "action_kind" = 'route';
+  UPDATE "pages_blocks_cards_items" SET "action_kind" = 'page' WHERE "action_kind" = 'route';
+  UPDATE "_pages_v_blocks_hero" SET "action_kind" = 'page' WHERE "action_kind" = 'route';
+  UPDATE "_pages_v_blocks_callout" SET "action_kind" = 'page' WHERE "action_kind" = 'route';
+  UPDATE "_pages_v_blocks_cards_items" SET "action_kind" = 'page' WHERE "action_kind" = 'route';
+  ALTER TABLE "organizations_settings_website_navigation" ALTER COLUMN "kind" SET DATA TYPE text;
   ALTER TABLE "organizations_settings_website_navigation" ALTER COLUMN "kind" SET DEFAULT 'page'::text;
   DROP TYPE "public"."enum_organizations_settings_website_navigation_kind";
   CREATE TYPE "public"."enum_organizations_settings_website_navigation_kind" AS ENUM('page', 'external');
