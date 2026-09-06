@@ -106,10 +106,25 @@ jobs:
       - name: Apply migrations to clean PostgreSQL
         run: pnpm db:migrate
 
-      - name: Roll back latest migration batch
+      - name: Isolate latest migration for rollback verification
+        run: |
+          psql "$DATABASE_URL" --set ON_ERROR_STOP=1 --command "
+            WITH migration_state AS (
+              SELECT
+                MAX(id) AS latest_id,
+                COALESCE(MAX(batch), 0) + 1 AS next_batch
+              FROM payload_migrations
+            )
+            UPDATE payload_migrations AS migration
+            SET batch = migration_state.next_batch
+            FROM migration_state
+            WHERE migration.id = migration_state.latest_id;
+          "
+
+      - name: Roll back latest migration
         run: pnpm db:migrate:down
 
-      - name: Re-apply migrations after rollback
+      - name: Re-apply latest migration
         run: pnpm db:migrate
 
       - name: Report migration status
