@@ -9,16 +9,44 @@ export type PublicMedia = {
   width: number | null
 }
 
+export type PublicNavigationItem = {
+  external: boolean
+  href: string
+  label: string
+  newTab: boolean
+}
+
+export type PublicSiteTheme = {
+  colors: {
+    accent: string
+    background: string
+    muted: string
+    primary: string
+    surface: string
+    text: string
+  }
+  fontFamily: 'system' | 'humanist' | 'serif' | 'mono'
+  radius: 'none' | 'small' | 'medium' | 'large'
+}
+
 export type PublicOrganization = {
   name: string
   slug: string
   locale: string
   timezone: string
+  identity: {
+    logo: PublicMedia | null
+    siteTitle: string
+    tagline: string | null
+  }
+  navigation: PublicNavigationItem[]
   publicContact: {
     email: string | null
     phone: string | null
   }
+  theme: PublicSiteTheme
   website: {
+    navigationMode: 'automatic' | 'manual'
     primaryDomain: string | null
   }
 }
