@@ -4,6 +4,28 @@
   padding-bottom: 5rem;
 }
 
+.structured-page-intro {
+  max-width: 820px;
+}
+
+.structured-page-intro h1,
+.hero-copy h1,
+.hero-copy .hero-heading {
+  max-width: 13ch;
+  color: var(--as-color-primary, #161616);
+}
+
+.structured-page-intro .lead {
+  color: var(--as-color-muted, #6b7280);
+}
+
+.hero-copy .hero-heading {
+  margin: 0;
+  font-size: clamp(2.3rem, 6vw, 4.8rem);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+
 .page-section {
   min-width: 0;
 }
@@ -32,11 +54,6 @@
 .hero-section.align-center .hero-copy,
 .hero-section.align-center .lead {
   margin-inline: auto;
-}
-
-.hero-copy h1 {
-  max-width: 13ch;
-  color: var(--as-color-primary, #161616);
 }
 
 .hero-copy .lead {
