@@ -263,6 +263,7 @@ describe('tenant-aware CMS', () => {
       overrideAccess: false,
       user: asRequestUser(editorA) as any,
       data: {
+        content: emptyRichText,
         _status: 'published',
       } as any,
     })
@@ -296,8 +297,8 @@ describe('tenant-aware CMS', () => {
   })
 
   test('rejects a cross-tenant media relationship', async () => {
-    await expect(
-      payload.create({
+    try {
+      await payload.create({
         collection: 'posts',
         draft: true,
         overrideAccess: false,
@@ -310,8 +311,13 @@ describe('tenant-aware CMS', () => {
           organization: organizationA.id,
           _status: 'draft',
         } as any,
-      }),
-    ).rejects.toThrow(/same organization/i)
+      })
+
+      throw new Error('Expected cross-tenant media reference to be rejected')
+    } catch (error: any) {
+      expect(error?.data?.errors?.[0]?.path).toBe('heroImage')
+      expect(error?.data?.errors?.[0]?.message).toMatch(/same organization/i)
+    }
   })
 
   test('rejects duplicate post slugs inside the same organization', async () => {
