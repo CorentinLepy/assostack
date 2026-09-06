@@ -57,7 +57,7 @@ const hasSections = page.sections.length > 0
 >
   {
     hasSections ? (
-      <PublicPageSections sections={page.sections} />
+      <PublicPageSections pageTitle={page.title} pageSummary={page.summary} sections={page.sections} />
     ) : (
       <article class="content-page">
         <p class="eyebrow">{organization.name}</p>
