@@ -1,10 +1,18 @@
 import type { CollectionConfig } from 'payload'
 
+import { isPlatformAdmin } from '../access/organizations'
+
 export const Organizations: CollectionConfig = {
   slug: 'organizations',
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'slug', 'status', 'updatedAt'],
+  },
+  access: {
+    create: ({ req }) => isPlatformAdmin(req.user),
+    read: ({ req }) => Boolean(req.user),
+    update: ({ req }) => isPlatformAdmin(req.user),
+    delete: ({ req }) => isPlatformAdmin(req.user),
   },
   fields: [
     {
