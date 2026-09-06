@@ -33,12 +33,15 @@ An optional section heading/introduction followed by one to six reusable informa
 
 ## Actions
 
-Actions are either:
+Actions can target:
 
-- an internal relationship to a page owned by the same organization; or
+- an internal relationship to a published page owned by the same organization;
+- a constrained built-in AssoStack public route, currently `news`;
 - an absolute `http://` or `https://` URL.
 
-The public API converts actions to a small ID-free DTO containing only the final `href`, label, external flag, and new-tab flag. Internal targets that are not published are omitted from the public response.
+Built-in route keys are backend configuration details. For example, `news` resolves to `/news`, and only the resolved destination is exposed publicly. This keeps the public DTO stable as product modules evolve.
+
+The public API converts all actions to a small ID-free DTO containing only the final `href`, label, external flag, and new-tab flag. Internal page targets that are not published and unsupported route values are omitted from the public response.
 
 New-tab links are rendered with `noopener noreferrer` by Astro.
 
@@ -46,7 +49,7 @@ New-tab links are rendered with `noopener noreferrer` by Astro.
 
 Page and media relationships inside sections are validated at write time. A page belonging to organization A cannot reference a page or media record belonging to organization B.
 
-The public serializer repeats the ownership check before exposing populated media or internal page actions. UI filtering alone must never be considered a security boundary.
+Built-in routes contain no cross-tenant relationship and are resolved from AssoStack's constrained route registry. The public serializer repeats ownership/route checks before exposing populated media or actions. UI filtering alone must never be considered a security boundary.
 
 ## Styling
 
