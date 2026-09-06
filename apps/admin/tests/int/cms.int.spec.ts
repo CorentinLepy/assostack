@@ -10,11 +10,31 @@ const asRequestUser = <T extends Record<string, unknown>>(user: T) => ({
   collection: 'users' as const,
 })
 
-const emptyRichText = {
+const richTextFixture = {
   root: {
     type: 'root',
-    children: [],
-    direction: null,
+    children: [
+      {
+        type: 'paragraph',
+        children: [
+          {
+            type: 'text',
+            detail: 0,
+            format: 0,
+            mode: 'normal',
+            style: '',
+            text: 'AssoStack CMS integration test content.',
+            version: 1,
+          },
+        ],
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        textFormat: 0,
+        version: 1,
+      },
+    ],
+    direction: 'ltr',
     format: '',
     indent: 0,
     version: 1,
@@ -163,7 +183,7 @@ describe('tenant-aware CMS', () => {
       data: {
         title: 'About Alpha',
         slug: 'About',
-        content: emptyRichText,
+        content: richTextFixture,
         organization: organizationA.id,
         _status: 'draft',
       } as any,
@@ -177,7 +197,7 @@ describe('tenant-aware CMS', () => {
       data: {
         title: 'About Beta',
         slug: 'about',
-        content: emptyRichText,
+        content: richTextFixture,
         organization: organizationB.id,
         _status: 'draft',
       } as any,
@@ -204,7 +224,7 @@ describe('tenant-aware CMS', () => {
         data: {
           title: 'Another Alpha About',
           slug: 'about',
-          content: emptyRichText,
+          content: richTextFixture,
           organization: organizationA.id,
           _status: 'draft',
         } as any,
@@ -263,7 +283,7 @@ describe('tenant-aware CMS', () => {
       overrideAccess: false,
       user: asRequestUser(editorA) as any,
       data: {
-        content: emptyRichText,
+        content: richTextFixture,
         _status: 'published',
       } as any,
     })
@@ -307,7 +327,7 @@ describe('tenant-aware CMS', () => {
           title: 'Alpha post with foreign media',
           slug: 'foreign-media',
           heroImage: mediaB.id,
-          content: emptyRichText,
+          content: richTextFixture,
           organization: organizationA.id,
           _status: 'draft',
         } as any,
@@ -330,7 +350,7 @@ describe('tenant-aware CMS', () => {
         title: 'First News',
         slug: 'news',
         heroImage: mediaA.id,
-        content: emptyRichText,
+        content: richTextFixture,
         organization: organizationA.id,
         _status: 'draft',
       } as any,
@@ -345,7 +365,7 @@ describe('tenant-aware CMS', () => {
         data: {
           title: 'Second News',
           slug: 'news',
-          content: emptyRichText,
+          content: richTextFixture,
           organization: organizationA.id,
           _status: 'draft',
         } as any,
