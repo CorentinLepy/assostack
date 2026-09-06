@@ -1,0 +1,97 @@
+---
+import type {
+  PublicOrganization,
+  PublicPageSummary,
+} from '../../../../../packages/contracts/src/public-content'
+import PublicRichText from '../../components/PublicRichText.astro'
+import PublicSiteLayout from '../../layouts/PublicSiteLayout.astro'
+import { formatPublicDate } from '../../lib/format-date'
+import { getPublicCopy } from '../../lib/public-copy'
+import {
+  getPublicOrganization,
+  getPublicPost,
+  isPublicContentConfigured,
+  listPublicPages,
+  listPublicPosts,
+} from '../../lib/public-content'
+import '../../styles/news.css'
+
+export async function getStaticPaths() {
+  if (!isPublicContentConfigured()) {
+    return []
+  }
+
+  const [organization, pages, posts] = await Promise.all([
+    getPublicOrganization(),
+    listPublicPages(),
+    listPublicPosts(),
+  ])
+
+  return posts.map((post) => ({
+    params: {
+      slug: post.slug,
+    },
+    props: {
+      organization,
+      pages,
+    },
+  }))
+}
+
+interface Props {
+  organization: PublicOrganization
+  pages: PublicPageSummary[]
+}
+
+const { organization, pages } = Astro.props
+const slug = Astro.params.slug
+
+if (!slug) {
+  throw new Error('A post slug is required to render a public news article.')
+}
+
+const post = await getPublicPost(slug)
+const copy = getPublicCopy(organization.locale)
+const publishedDate = formatPublicDate(post.publishedAt, organization.locale, organization.timezone)
+---
+
+<PublicSiteLayout
+  organization={organization}
+  pages={pages}
+  title={post.meta.title ?? post.title}
+  description={post.meta.description ?? post.excerpt}
+>
+  <article class="news-article">
+    <a class="news-article__back" href="/news">← {copy.backToNews}</a>
+
+    <header class="news-article__header">
+      {
+        publishedDate && post.publishedAt && (
+          <p class="news-article__meta">
+            <span class="sr-only">{copy.publishedOn} </span>
+            <time class="news-article__date" datetime={post.publishedAt}>{publishedDate}</time>
+          </p>
+        )
+      }
+      <h1>{post.title}</h1>
+      {post.excerpt && <p class="news-article__excerpt">{post.excerpt}</p>}
+    </header>
+
+    {
+      post.heroImage && (
+        <img
+          class="news-article__hero"
+          src={post.heroImage.url}
+          alt={post.heroImage.alt}
+          width={post.heroImage.width ?? undefined}
+          height={post.heroImage.height ?? undefined}
+          loading="eager"
+        />
+      )
+    }
+
+    <div class="news-article__content">
+      <PublicRichText content={post.content} />
+    </div>
+  </article>
+</PublicSiteLayout>
