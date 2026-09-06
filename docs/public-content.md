@@ -66,6 +66,8 @@ Internal values such as these must not leak into the public contract unless deli
 
 The shared v1 DTO definitions live in `packages/contracts/src/public-content.ts`.
 
+Public actions follow the same rule. Payload may store an organization page relationship, a built-in AssoStack route key, or an external URL, but the public DTO exposes only the resolved `href`, label, external flag, and new-tab flag. Built-in route keys therefore remain backend implementation details.
+
 ## Caching
 
 Successful public reads are cacheable and currently use a short browser TTL plus a longer shared-cache TTL. This lets a reverse proxy, CDN, or edge platform cache the public contract without coupling AssoStack to a specific provider.
@@ -98,7 +100,7 @@ A configured organization build currently generates:
 
 The news index remains valid when an organization has no published posts and renders an explicit empty state. Publication dates are formatted using the organization's configured locale and timezone.
 
-The built-in `/news` route is intentionally not forced into every organization's navigation. Product routes and configurable navigation remain separate concerns so organizations can decide which capabilities are exposed in their public menu.
+The built-in `/news` route is intentionally not forced into every organization's navigation. In manual navigation, editors can explicitly select the built-in News destination. Payload stores the stable internal route key (`news`), while the public API resolves it to `/news` before Astro sees it. The same action model is available to reusable page sections.
 
 This design means the generated public website can continue serving after a temporary Payload/CRM outage.
 
@@ -117,6 +119,6 @@ Expected follow-ups include:
 - richer safe Lexical rendering;
 - media storage adapters such as S3-compatible/R2 storage;
 - broader localization infrastructure beyond the initial public copy helpers;
-- configurable navigation targets for built-in product routes;
+- additional built-in route keys only when the corresponding public modules exist;
 - API conditional requests (`ETag` / `Last-Modified`) if useful;
 - domain-to-organization resolution for hosted multi-tenant deployments.
