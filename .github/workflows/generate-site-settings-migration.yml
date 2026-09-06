@@ -60,13 +60,13 @@ jobs:
 
       - name: Collect generated migration
         run: |
-          mkdir -p .migration-artifact
-          find apps/admin/src/migrations -maxdepth 1 -type f \( -name '*site_configuration*.ts' -o -name '*site_configuration*.json' -o -name 'index.ts' \) -exec cp {} .migration-artifact/ \;
-          ls -la .migration-artifact
+          mkdir -p migration-artifact
+          find apps/admin/src/migrations -maxdepth 1 -type f \( -name '*site_configuration*.ts' -o -name '*site_configuration*.json' -o -name 'index.ts' \) -exec cp {} migration-artifact/ \;
+          ls -la migration-artifact
 
       - name: Upload generated migration
         uses: actions/upload-artifact@v7
         with:
           name: site-configuration-migration
-          path: .migration-artifact/
+          path: migration-artifact/
           if-no-files-found: error
