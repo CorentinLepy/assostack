@@ -1,5 +1,6 @@
 import type { Block, Field } from 'payload'
 
+import { builtInPublicRouteOptions } from './public-routes'
 import {
   ensureMediaBelongsToCurrentOrganization,
   ensurePageBelongsToCurrentOrganization,
@@ -42,6 +43,7 @@ const actionField = (name = 'action', label = 'Action'): Field => ({
       defaultValue: 'page',
       options: [
         { label: 'Internal page', value: 'page' },
+        { label: 'Built-in route', value: 'route' },
         { label: 'External URL', value: 'external' },
       ],
     },
@@ -53,7 +55,19 @@ const actionField = (name = 'action', label = 'Action'): Field => ({
         beforeChange: [ensurePageBelongsToCurrentOrganization],
       },
       admin: {
-        condition: (_data, siblingData) => siblingData?.kind !== 'external',
+        condition: (_data, siblingData) => siblingData?.kind === 'page',
+      },
+    },
+    {
+      name: 'route',
+      type: 'select',
+      options: builtInPublicRouteOptions.map(({ label: routeLabel, value }) => ({
+        label: routeLabel,
+        value,
+      })),
+      admin: {
+        condition: (_data, siblingData) => siblingData?.kind === 'route',
+        description: 'Built-in AssoStack public destination.',
       },
     },
     {
