@@ -29,11 +29,43 @@ const organization = {
   slug: 'demo-association',
   locale: 'fr-FR',
   timezone: 'Europe/Paris',
+  identity: {
+    logo: null,
+    siteTitle: 'Demo Association Web',
+    tagline: 'A configurable AssoStack website.',
+  },
+  navigation: [
+    {
+      external: true,
+      href: 'https://example.com/partner',
+      label: 'Partner',
+      newTab: true,
+    },
+    {
+      external: false,
+      href: '/about',
+      label: 'Discover us',
+      newTab: false,
+    },
+  ],
   publicContact: {
     email: 'contact@demo.test',
     phone: null,
   },
+  theme: {
+    colors: {
+      accent: '#D97706',
+      background: '#FFFDF7',
+      muted: '#6B6255',
+      primary: '#123456',
+      surface: '#F6F1E7',
+      text: '#171717',
+    },
+    fontFamily: 'serif',
+    radius: 'large',
+  },
   website: {
+    navigationMode: 'manual',
     primaryDomain: 'demo.test',
   },
 }
@@ -166,7 +198,29 @@ try {
     throw new Error('Configured build did not generate the published /about page.')
   }
 
-  console.log('Configured organization build rendered published API content successfully.')
+  if (!homeHTML.includes('Demo Association Web')) {
+    throw new Error('Configured build did not render the public site title.')
+  }
+
+  const partnerPosition = homeHTML.indexOf('Partner')
+  const discoverPosition = homeHTML.indexOf('Discover us')
+  if (partnerPosition === -1 || discoverPosition === -1 || partnerPosition > discoverPosition) {
+    throw new Error('Configured build did not preserve manual navigation order.')
+  }
+
+  if (!homeHTML.includes('https://example.com/partner')) {
+    throw new Error('Configured build did not render the external navigation target.')
+  }
+
+  if (!homeHTML.includes('--as-color-primary:#123456')) {
+    throw new Error('Configured build did not apply public theme color tokens.')
+  }
+
+  if (!homeHTML.includes('--as-radius:1.25rem')) {
+    throw new Error('Configured build did not apply the public radius token.')
+  }
+
+  console.log('Configured organization build rendered public identity, navigation and theme successfully.')
 } finally {
   await new Promise((resolve, reject) =>
     server.close((error) => (error ? reject(error) : resolve())),

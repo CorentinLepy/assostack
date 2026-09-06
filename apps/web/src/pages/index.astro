@@ -41,11 +41,11 @@ const pillars = [
     <PublicSiteLayout
       organization={publicSite.organization}
       pages={publicSite.pages}
-      title={publicSite.home.meta.title ?? publicSite.organization.name}
+      title={publicSite.home.meta.title ?? publicSite.organization.identity.siteTitle}
       description={publicSite.home.meta.description ?? publicSite.home.summary}
     >
       <article class="content-page content-page--home">
-        <p class="eyebrow">{publicSite.organization.name}</p>
+        <p class="eyebrow">{publicSite.organization.identity.siteTitle}</p>
         <h1>{publicSite.home.title}</h1>
         {publicSite.home.summary && <p class="lead">{publicSite.home.summary}</p>}
         <PublicRichText content={publicSite.home.content} />
@@ -88,8 +88,8 @@ const pillars = [
 
           <section class="status">
             <p>
-              <strong>Current milestone:</strong> 0.2 CMS — tenant-aware content and a public Astro
-              delivery boundary.
+              <strong>Current milestone:</strong> 0.2 CMS — tenant-aware content and configurable
+              public sites.
             </p>
           </section>
         </main>

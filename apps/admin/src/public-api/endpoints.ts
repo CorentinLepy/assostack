@@ -68,7 +68,7 @@ const invalidRequest = (req: PayloadRequest, message: string) => {
 const findPublicOrganization = async (req: PayloadRequest, organizationSlug: string) => {
   const result = await req.payload.find({
     collection: 'organizations',
-    depth: 0,
+    depth: 1,
     limit: 1,
     overrideAccess: true,
     where: {
@@ -125,7 +125,7 @@ export const publicSiteEndpoint: Endpoint = {
 
     const body: PublicEnvelope<PublicOrganization> = {
       apiVersion: PUBLIC_CONTENT_API_VERSION,
-      data: serializePublicOrganization(organization),
+      data: serializePublicOrganization(organization, req.payload.config.serverURL ?? ''),
     }
 
     return jsonResponse(req, body)

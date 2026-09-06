@@ -1,8 +1,10 @@
 ---
 import type {
+  PublicNavigationItem,
   PublicOrganization,
   PublicPageSummary,
 } from '../../../../packages/contracts/src/public-content'
+import { themeStyle } from '../lib/theme'
 import '../styles/global.css'
 
 interface Props {
@@ -13,8 +15,21 @@ interface Props {
 }
 
 const { description, organization, pages, title } = Astro.props
-const navigation = pages.filter((page) => page.slug !== 'home')
-const homeTitle = title === organization.name ? title : `${title} — ${organization.name}`
+const automaticNavigation: PublicNavigationItem[] = pages
+  .filter((page) => page.slug !== 'home')
+  .map((page) => ({
+    external: false,
+    href: `/${page.slug}`,
+    label: page.title,
+    newTab: false,
+  }))
+const navigation =
+  organization.website.navigationMode === 'manual'
+    ? organization.navigation
+    : automaticNavigation
+const siteTitle = organization.identity.siteTitle
+const documentTitle = title === siteTitle ? title : `${title} — ${siteTitle}`
+const style = themeStyle(organization.theme)
 ---
 
 <html lang={organization.locale}>
@@ -22,19 +37,42 @@ const homeTitle = title === organization.name ? title : `${title} — ${organiza
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     {description && <meta name="description" content={description} />}
-    <title>{homeTitle}</title>
+    <title>{documentTitle}</title>
   </head>
-  <body class="organization-site">
+  <body class="organization-site" style={style}>
     <header class="site-header">
       <div class="site-header__inner">
-        <a class="site-brand" href="/">{organization.name}</a>
+        <a class="site-brand" href="/">
+          {
+            organization.identity.logo && (
+              <img
+                class="site-brand__logo"
+                src={organization.identity.logo.url}
+                alt={organization.identity.logo.alt}
+                width={organization.identity.logo.width ?? undefined}
+                height={organization.identity.logo.height ?? undefined}
+              />
+            )
+          }
+          <span class="site-brand__copy">
+            <strong>{siteTitle}</strong>
+            {organization.identity.tagline && <small>{organization.identity.tagline}</small>}
+          </span>
+        </a>
         {
           navigation.length > 0 && (
             <nav aria-label="Primary navigation">
               <ul class="site-nav">
-                {navigation.map((page) => (
+                {navigation.map((item) => (
                   <li>
-                    <a href={`/${page.slug}`}>{page.title}</a>
+                    <a
+                      href={item.href}
+                      target={item.newTab ? '_blank' : undefined}
+                      rel={item.newTab ? 'noopener noreferrer' : undefined}
+                    >
+                      {item.label}
+                      {item.external && <span class="sr-only"> (external)</span>}
+                    </a>
                   </li>
                 ))}
               </ul>
@@ -50,7 +88,7 @@ const homeTitle = title === organization.name ? title : `${title} — ${organiza
 
     <footer class="site-footer">
       <div class="site-footer__inner">
-        <strong>{organization.name}</strong>
+        <strong>{siteTitle}</strong>
         {
           organization.publicContact.email && (
             <a href={`mailto:${organization.publicContact.email}`}>
