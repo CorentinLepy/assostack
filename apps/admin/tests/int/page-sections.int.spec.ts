@@ -261,13 +261,13 @@ describe('structured public page sections', () => {
           },
           {
             blockType: 'callout',
-            heading: 'Ready to participate?',
-            text: 'Discover how to join.',
+            heading: 'Read our latest updates',
+            text: 'Discover what is happening in the organization.',
             tone: 'accent',
             action: {
-              label: 'Join Alpha',
-              kind: 'page',
-              page: targetA.id,
+              label: 'Latest news',
+              kind: 'route',
+              route: 'news',
             },
           },
         ],
@@ -308,7 +308,16 @@ describe('structured public page sections', () => {
       label: 'External resource',
       newTab: true,
     })
-    expect(body.data.sections[3].tone).toBe('accent')
+    expect(body.data.sections[3]).toMatchObject({
+      type: 'callout',
+      tone: 'accent',
+      action: {
+        external: false,
+        href: '/news',
+        label: 'Latest news',
+        newTab: false,
+      },
+    })
 
     expect(
       containsForbiddenKey(
@@ -318,6 +327,7 @@ describe('structured public page sections', () => {
     ).toBe(false)
     expect(body.data.sections[0].action).not.toHaveProperty('page')
     expect(body.data.sections[2].items[0].action).not.toHaveProperty('url')
+    expect(body.data.sections[3].action).not.toHaveProperty('route')
   })
 
   test('rejects a page section linking to a page from another organization', async () => {
