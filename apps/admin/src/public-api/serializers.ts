@@ -1,8 +1,11 @@
 import type {
+  PublicAction,
+  PublicCardItem,
   PublicMedia,
   PublicNavigationItem,
   PublicOrganization,
   PublicPage,
+  PublicPageSection,
   PublicPageSummary,
   PublicPost,
   PublicPostSummary,
@@ -110,6 +113,46 @@ const safeExternalURL = (value: unknown): string | null => {
   }
 }
 
+const serializeAction = (value: unknown, organizationID: unknown): PublicAction | null => {
+  const action = asRecord(value)
+  const label = asString(action?.label)
+  if (!action || !label) {
+    return null
+  }
+
+  if (action.kind === 'external') {
+    const href = safeExternalURL(action.url)
+    if (!href) {
+      return null
+    }
+
+    return {
+      external: true,
+      href,
+      label,
+      newTab: action.newTab === true,
+    }
+  }
+
+  const page = asRecord(action.page)
+  const slug = asString(page?.slug)
+  if (
+    !page ||
+    !slug ||
+    page._status !== 'published' ||
+    !sameRelationshipID(page.organization, organizationID)
+  ) {
+    return null
+  }
+
+  return {
+    external: false,
+    href: slug === 'home' ? '/' : `/${slug}`,
+    label,
+    newTab: false,
+  }
+}
+
 const serializeNavigation = (
   value: unknown,
   organizationID: unknown,
@@ -118,50 +161,115 @@ const serializeNavigation = (
     return []
   }
 
-  const items: PublicNavigationItem[] = []
+  return value
+    .map((item) => serializeAction(item, organizationID))
+    .filter((item): item is PublicNavigationItem => item !== null)
+}
 
-  for (const rawItem of value) {
-    const item = asRecord(rawItem)
-    const label = asString(item?.label)
-    if (!item || !label) {
+const serializeCards = (
+  value: unknown,
+  organizationID: unknown,
+  serverURL: string,
+): PublicCardItem[] => {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  const cards: PublicCardItem[] = []
+
+  for (const rawCard of value) {
+    const card = asRecord(rawCard)
+    const title = asString(card?.title)
+    if (!card || !title) {
       continue
     }
 
-    if (item.kind === 'external') {
-      const href = safeExternalURL(item.url)
-      if (!href) {
+    cards.push({
+      action: serializeAction(card.action, organizationID),
+      image: serializeOwnedMedia(card.image, organizationID, serverURL),
+      text: asString(card.text),
+      title,
+    })
+  }
+
+  return cards
+}
+
+const serializePageSections = (
+  value: unknown,
+  organizationID: unknown,
+  serverURL: string,
+): PublicPageSection[] => {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  const sections: PublicPageSection[] = []
+
+  for (const rawSection of value) {
+    const section = asRecord(rawSection)
+    if (!section) {
+      continue
+    }
+
+    if (section.blockType === 'hero') {
+      const heading = asString(section.heading)
+      if (!heading) {
         continue
       }
 
-      items.push({
-        external: true,
-        href,
-        label,
-        newTab: item.newTab === true,
+      sections.push({
+        type: 'hero',
+        alignment: section.alignment === 'center' ? 'center' : 'left',
+        action: serializeAction(section.action, organizationID),
+        eyebrow: asString(section.eyebrow),
+        heading,
+        image: serializeOwnedMedia(section.image, organizationID, serverURL),
+        text: asString(section.text),
       })
       continue
     }
 
-    const page = asRecord(item.page)
-    const slug = asString(page?.slug)
-    if (
-      !page ||
-      !slug ||
-      page._status !== 'published' ||
-      !sameRelationshipID(page.organization, organizationID)
-    ) {
+    if (section.blockType === 'richText') {
+      sections.push({
+        type: 'richText',
+        content: asRecord(section.content) ?? {},
+      })
       continue
     }
 
-    items.push({
-      external: false,
-      href: slug === 'home' ? '/' : `/${slug}`,
-      label,
-      newTab: false,
-    })
+    if (section.blockType === 'callout') {
+      const heading = asString(section.heading)
+      if (!heading) {
+        continue
+      }
+
+      sections.push({
+        type: 'callout',
+        action: serializeAction(section.action, organizationID),
+        heading,
+        text: asString(section.text),
+        tone: section.tone === 'accent' ? 'accent' : 'neutral',
+      })
+      continue
+    }
+
+    if (section.blockType === 'cards') {
+      const items = serializeCards(section.items, organizationID, serverURL)
+      if (items.length === 0) {
+        continue
+      }
+
+      sections.push({
+        type: 'cards',
+        heading: asString(section.heading),
+        intro: asString(section.intro),
+        items,
+      })
+    }
   }
 
-  return items
+  return sections
 }
 
 const defaultTheme: PublicSiteTheme = {
@@ -260,6 +368,7 @@ export const serializePublicPage = (value: unknown, serverURL: string): PublicPa
     ...serializePublicPageSummary(page),
     content: asRecord(page.content) ?? {},
     meta: serializeSEO(page.meta, serverURL),
+    sections: serializePageSections(page.sections, page.organization, serverURL),
   }
 }
 
