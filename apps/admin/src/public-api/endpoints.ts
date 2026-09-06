@@ -97,7 +97,7 @@ const findPublicOrganization = async (req: PayloadRequest, organizationSlug: str
 }
 
 const parsePagination = (req: PayloadRequest) => {
-  const url = new URL(req.url)
+  const url = new URL(req.url ?? 'http://localhost')
   const requestedPage = Number.parseInt(url.searchParams.get('page') ?? '1', 10)
   const requestedLimit = Number.parseInt(url.searchParams.get('limit') ?? '20', 10)
 
