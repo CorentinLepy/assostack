@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { isPlatformAdmin, organizationRecordAccess } from '../access/organizations'
+import { builtInPublicRouteOptions } from '../cms/public-routes'
 import { validateWebsiteSettings } from '../hooks/validateWebsiteSettings'
 
 const validateHexColor = (value: unknown): true | string => {
@@ -157,7 +158,7 @@ export const Organizations: CollectionConfig = {
               maxRows: 20,
               admin: {
                 condition: (_data, siblingData) => siblingData?.navigationMode === 'manual',
-                description: 'Ordered primary navigation. Internal links must point to pages owned by this organization.',
+                description: 'Ordered primary navigation. Choose an organization page, an AssoStack built-in public route, or an external URL.',
               },
               fields: [
                 {
@@ -172,6 +173,7 @@ export const Organizations: CollectionConfig = {
                   defaultValue: 'page',
                   options: [
                     { label: 'Page', value: 'page' },
+                    { label: 'Built-in route', value: 'route' },
                     { label: 'External URL', value: 'external' },
                   ],
                 },
@@ -180,7 +182,19 @@ export const Organizations: CollectionConfig = {
                   type: 'relationship',
                   relationTo: 'pages',
                   admin: {
-                    condition: (_data, siblingData) => siblingData?.kind !== 'external',
+                    condition: (_data, siblingData) => siblingData?.kind === 'page',
+                  },
+                },
+                {
+                  name: 'route',
+                  type: 'select',
+                  options: builtInPublicRouteOptions.map(({ label, value }) => ({
+                    label,
+                    value,
+                  })),
+                  admin: {
+                    condition: (_data, siblingData) => siblingData?.kind === 'route',
+                    description: 'Built-in AssoStack public destination.',
                   },
                 },
                 {
