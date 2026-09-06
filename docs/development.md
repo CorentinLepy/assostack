@@ -16,7 +16,7 @@ cp apps/admin/.env.example apps/admin/.env
 docker compose up -d postgres
 corepack enable
 corepack prepare pnpm@11.25.0 --activate
-pnpm install
+pnpm install --frozen-lockfile
 pnpm dev
 ```
 
@@ -35,8 +35,10 @@ The database port is deliberately bound to loopback for local development. Produ
 pnpm dev:web
 pnpm dev:admin
 pnpm typecheck
+pnpm test
 pnpm build
 pnpm --filter @assostack/admin generate:types
+pnpm db:migrate:status
 ```
 
 ## Environment files
@@ -47,7 +49,17 @@ Payload reads its application environment from `apps/admin/.env` when run from t
 
 ## Database changes
 
-The schema is intentionally tiny during milestone 0.1. Any future production database change must be represented by a committed migration before AssoStack reaches a stable release.
+Local development uses Payload/Drizzle schema push as a sandbox workflow. Staging and production do not.
+
+Once a schema-changing feature is ready for review, create and commit a Payload migration. Do not run those migrations against a local database that has already been evolved through push mode.
+
+See [database-migrations.md](database-migrations.md) for the full workflow, production rules and rollback expectations.
+
+## Dependency changes
+
+`pnpm-lock.yaml` is committed and CI installs with `--frozen-lockfile`.
+
+When intentionally changing dependencies, run the repository's pinned pnpm version and commit the resulting lockfile update with the dependency change.
 
 ## Team SMH
 
