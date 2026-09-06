@@ -1,15 +1,22 @@
-import type {
-  PublicEnvelope,
-  PublicListEnvelope,
-  PublicOrganization,
-  PublicPage,
-  PublicPageSummary,
-  PublicPost,
-  PublicPostSummary,
+import {
+  PUBLIC_CONTENT_API_VERSION,
+  type PublicEnvelope,
+  type PublicListEnvelope,
+  type PublicOrganization,
+  type PublicPage,
+  type PublicPageSummary,
+  type PublicPost,
+  type PublicPostSummary,
 } from '../../../../packages/contracts/src/public-content'
 
 const configuredAPIURL = import.meta.env.ASSOSTACK_API_URL?.trim()
 const configuredOrganization = import.meta.env.ASSOSTACK_ORGANIZATION?.trim()
+
+if (Boolean(configuredAPIURL) !== Boolean(configuredOrganization)) {
+  throw new Error(
+    'ASSOSTACK_API_URL and ASSOSTACK_ORGANIZATION must either both be set or both be absent.',
+  )
+}
 
 export const publicContentConfiguration = {
   apiURL: configuredAPIURL ? configuredAPIURL.replace(/\/+$/, '') : null,
@@ -19,7 +26,7 @@ export const publicContentConfiguration = {
 export const isPublicContentConfigured = (): boolean =>
   Boolean(publicContentConfiguration.apiURL && publicContentConfiguration.organization)
 
-const request = async <T>(path: string): Promise<T> => {
+const request = async <T extends { apiVersion: string }>(path: string): Promise<T> => {
   const { apiURL } = publicContentConfiguration
   if (!apiURL) {
     throw new Error('ASSOSTACK_API_URL is required to load organization content.')
@@ -36,7 +43,14 @@ const request = async <T>(path: string): Promise<T> => {
     throw new Error(`AssoStack public content request failed with HTTP ${response.status}.`)
   }
 
-  return (await response.json()) as T
+  const body = (await response.json()) as T
+  if (body.apiVersion !== PUBLIC_CONTENT_API_VERSION) {
+    throw new Error(
+      `Unsupported AssoStack public content API version: ${String(body.apiVersion)}.`,
+    )
+  }
+
+  return body
 }
 
 const organizationPath = (): string => {
