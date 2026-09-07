@@ -77,12 +77,8 @@ export default buildConfig({
     multiTenantPlugin({
       collections: {
         'contact-tags': {},
-        'privacy-purposes': {
-          useTenantAccess: false,
-        },
-        'privacy-records': {
-          useTenantAccess: false,
-        },
+        'privacy-purposes': {},
+        'privacy-records': {},
         contacts: {},
         interactions: {},
         tasks: {},
