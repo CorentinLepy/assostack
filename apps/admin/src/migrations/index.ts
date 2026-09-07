@@ -11,6 +11,7 @@ import * as migration_20260907_072333_crm_tasks from './20260907_072333_crm_task
 import * as migration_20260907_073402_crm_contact_tags from './20260907_073402_crm_contact_tags';
 import * as migration_20260907_132550_crm_privacy from './20260907_132550_crm_privacy';
 import * as migration_20260907_161509_crm_memberships from './20260907_161509_crm_memberships';
+import * as migration_20260907_162849_events_registrations from './20260907_162849_events_registrations';
 
 export const migrations = [
   {
@@ -76,6 +77,11 @@ export const migrations = [
   {
     up: migration_20260907_161509_crm_memberships.up,
     down: migration_20260907_161509_crm_memberships.down,
-    name: '20260907_161509_crm_memberships'
+    name: '20260907_161509_crm_memberships',
+  },
+  {
+    up: migration_20260907_162849_events_registrations.up,
+    down: migration_20260907_162849_events_registrations.down,
+    name: '20260907_162849_events_registrations'
   },
 ];
