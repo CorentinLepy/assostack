@@ -1,9 +1,11 @@
 import type { CollectionConfig } from 'payload'
 
-import { organizationRoleAccess } from '../access/organizations'
+import { canManageAnyOrganization, organizationRoleAccess } from '../access/organizations'
 import {
   maintainCustomFieldArchiveTimestamp,
   normalizeCustomFieldDefinitionKey,
+  normalizeCustomFieldSortOrder,
+  preventCustomFieldDefinitionDeleteWhenReferenced,
   validateCustomFieldDefinition,
 } from '../crm/custom-field-hooks'
 import { assertOrganizationWriteAccess } from '../hooks/assertOrganizationWriteAccess'
@@ -17,18 +19,19 @@ export const CustomFieldDefinitions: CollectionConfig = {
     description: 'Tenant-scoped CRM custom-field schema for Contacts. Definitions are controlled by organization admins.',
   },
   access: {
-    create: organizationRoleAccess(['organization-admin']),
+    create: ({ req }) => canManageAnyOrganization(req.user, ['organization-admin']),
     read: organizationRoleAccess(['organization-admin', 'editor']),
     update: organizationRoleAccess(['organization-admin']),
     delete: organizationRoleAccess(['organization-admin']),
   },
   hooks: {
-    beforeValidate: [normalizeCustomFieldDefinitionKey],
+    beforeValidate: [normalizeCustomFieldDefinitionKey, normalizeCustomFieldSortOrder],
     beforeChange: [
       assertOrganizationWriteAccess(['organization-admin']),
       validateCustomFieldDefinition,
       maintainCustomFieldArchiveTimestamp,
     ],
+    beforeDelete: [preventCustomFieldDefinitionDeleteWhenReferenced],
   },
   fields: [
     { name: 'label', type: 'text', required: true, index: true },
@@ -66,7 +69,10 @@ export const CustomFieldDefinitions: CollectionConfig = {
       name: 'required',
       type: 'checkbox',
       defaultValue: false,
-      admin: { position: 'sidebar', description: 'Metadata for future forms/import validation; does not make every existing Contact invalid.' },
+      admin: {
+        position: 'sidebar',
+        description: 'Metadata for future forms/import validation; does not make every existing Contact invalid.',
+      },
     },
     {
       name: 'sortOrder',
@@ -74,7 +80,7 @@ export const CustomFieldDefinitions: CollectionConfig = {
       min: 0,
       defaultValue: 0,
       index: true,
-      admin: { position: 'sidebar' },
+      admin: { position: 'sidebar', description: 'Non-negative whole number for deterministic display ordering.' },
     },
     {
       name: 'status',
