@@ -9,6 +9,8 @@ import { fileURLToPath } from 'url'
 import { isPlatformAdmin } from './access/organizations'
 import { Contacts } from './collections/Contacts'
 import { ContactTags } from './collections/ContactTags'
+import { EventRegistrations } from './collections/EventRegistrations'
+import { Events } from './collections/Events'
 import { Interactions } from './collections/Interactions'
 import { Memberships } from './collections/Memberships'
 import { MembershipTypes } from './collections/MembershipTypes'
@@ -46,6 +48,8 @@ export default buildConfig({
     MembershipTypes,
     Contacts,
     Memberships,
+    Events,
+    EventRegistrations,
     Interactions,
     Tasks,
     PrivacyRecords,
@@ -84,7 +88,9 @@ export default buildConfig({
         'privacy-purposes': {},
         'privacy-records': {},
         'membership-types': {},
+        'event-registrations': {},
         memberships: {},
+        events: {},
         contacts: {},
         interactions: {},
         tasks: {},
