@@ -63,14 +63,11 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "tasks" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "tasks_rels" DISABLE ROW LEVEL SECURITY;
-  DROP TABLE "tasks" CASCADE;
-  DROP TABLE "tasks_rels" CASCADE;
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_tasks_fk";
-  
-  DROP INDEX "payload_locked_documents_rels_tasks_id_idx";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "tasks_id";
-  DROP TYPE "public"."enum_tasks_status";
-  DROP TYPE "public"."enum_tasks_priority";`)
+  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_tasks_fk";
+  DROP INDEX IF EXISTS "payload_locked_documents_rels_tasks_id_idx";
+  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "tasks_id";
+  DROP TABLE IF EXISTS "tasks_rels" CASCADE;
+  DROP TABLE IF EXISTS "tasks" CASCADE;
+  DROP TYPE IF EXISTS "public"."enum_tasks_status";
+  DROP TYPE IF EXISTS "public"."enum_tasks_priority";`)
 }
