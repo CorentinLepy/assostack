@@ -199,7 +199,7 @@ describe('CRM tasks', () => {
           organization: organizationA.id,
         } as any,
       }),
-    ).rejects.toThrow(/reminder/i)
+    ).rejects.toThrow(/remindAt/i)
   })
 
   test('maintains immutable completion and creator attribution, then clears completion on reopen', async () => {
