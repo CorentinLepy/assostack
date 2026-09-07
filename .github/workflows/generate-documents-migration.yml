@@ -1,5 +1,6 @@
 name: Generate documents migration
 
+# Temporary migration generator; remove after versioning the generated migration.
 on:
   push:
     branches:
@@ -71,7 +72,7 @@ jobs:
                   else:
                       rest.append(line)
               if rel:
-                  idx = next((i for i,l in enumerate(rest) if in_down and drop_table in l), None)
+                  idx = next((i for i,l in enumerate(rest) if drop_table in l), None)
                   if idx is None:
                       raise SystemExit('documents rollback table anchor not found')
                   rest[idx:idx] = rel
