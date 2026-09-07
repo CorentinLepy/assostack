@@ -65,8 +65,8 @@ describe('CRM custom fields', () => {
   })
 
   test('rejects wrong storage type and invalid select choices', async () => {
-    await expect(payload.create({ collection: 'contact-custom-field-values', overrideAccess: false, user: (await persistedRequestUser(adminA)) as any, data: { contact: contactA.id, field: textFieldA.id, numberValue: 42, organization: organizationA.id } as any })).rejects.toThrow(/field|type/i)
-    await expect(payload.create({ collection: 'contact-custom-field-values', overrideAccess: false, user: (await persistedRequestUser(adminA)) as any, data: { contact: contactA.id, field: selectFieldA.id, singleSelectValue: 'sms', organization: organizationA.id } as any })).rejects.toThrow(/selected/i)
+    await expect(payload.create({ collection: 'contact-custom-field-values', overrideAccess: false, user: (await persistedRequestUser(adminA)) as any, data: { contact: contactA.id, field: textFieldA.id, numberValue: 42, organization: organizationA.id } as any })).rejects.toThrow(/field|type|textValue/i)
+    await expect(payload.create({ collection: 'contact-custom-field-values', overrideAccess: false, user: (await persistedRequestUser(adminA)) as any, data: { contact: contactA.id, field: selectFieldA.id, singleSelectValue: 'sms', organization: organizationA.id } as any })).rejects.toThrow(/singleSelectValue/i)
   })
 
   test('rejects duplicate Contact/field pairs', async () => {
@@ -87,8 +87,9 @@ describe('CRM custom fields', () => {
     expect(values.docs.some((doc) => relationshipID(doc.field) === textFieldA.id)).toBe(true)
   })
 
-  test('prevents changing a definition type after values exist', async () => {
+  test('prevents changing or deleting a definition after values exist', async () => {
     await expect(payload.update({ collection: 'custom-field-definitions', id: textFieldA.id, overrideAccess: false, user: (await persistedRequestUser(adminA)) as any, data: { type: 'number' } })).rejects.toThrow(/type/i)
+    await expect(payload.delete({ collection: 'custom-field-definitions', id: textFieldA.id, overrideAccess: false, user: (await persistedRequestUser(adminA)) as any })).rejects.toThrow(/archive|status/i)
   })
 
   test('denies ordinary members broad access', async () => {
