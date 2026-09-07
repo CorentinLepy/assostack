@@ -14,7 +14,7 @@ export const Contacts: CollectionConfig = {
   admin: {
     useAsTitle: 'displayName',
     defaultColumns: ['displayName', 'kind', 'email', 'status', 'updatedAt'],
-    searchableFields: ['displayName', 'email', 'phone', 'externalReference'],
+    listSearchableFields: ['displayName', 'email', 'phone', 'externalReference'],
     description:
       'Tenant-scoped CRM parties. Memberships, volunteers, sponsors and other modules reference these contacts instead of duplicating people.',
   },
