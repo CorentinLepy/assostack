@@ -1,0 +1,41 @@
+name: Fix privacy async test
+
+on:
+  push:
+    branches:
+      - crm/privacy-consent
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Mark fixture test async
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('apps/admin/tests/int/privacy.int.spec.ts')
+          text = path.read_text()
+          old = "test('normalizes purpose keys while allowing the same key in different organizations', () => {"
+          new = "test('normalizes purpose keys while allowing the same key in different organizations', async () => {"
+          if old in text:
+              text = text.replace(old, new, 1)
+              path.write_text(text)
+          PY
+
+      - name: Commit fix when needed
+        run: |
+          if git diff --quiet -- apps/admin/tests/int/privacy.int.spec.ts; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/admin/tests/int/privacy.int.spec.ts
+          git commit -m "test(crm): await persisted privacy admin assertion"
+          git push origin HEAD:crm/privacy-consent
