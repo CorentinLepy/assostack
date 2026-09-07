@@ -22,6 +22,7 @@ type SiteSyncTaskDefinition = {
 }
 
 const reasonOptions: Array<{ label: string; value: SiteSyncReason }> = [
+  { label: 'Organization created', value: 'organization.created' },
   { label: 'Organization deleted', value: 'organization.deleted' },
   { label: 'Organization disabled', value: 'organization.disabled' },
   { label: 'Organization slug changed', value: 'organization.slug-changed' },
