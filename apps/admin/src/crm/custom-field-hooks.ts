@@ -1,4 +1,8 @@
-import type { CollectionBeforeChangeHook, CollectionBeforeValidateHook } from 'payload'
+import type {
+  CollectionBeforeChangeHook,
+  CollectionBeforeDeleteHook,
+  CollectionBeforeValidateHook,
+} from 'payload'
 import { ValidationError } from 'payload'
 
 import { getRelationshipID } from '../access/organizations'
@@ -44,6 +48,16 @@ export const normalizeCustomFieldDefinitionKey: CollectionBeforeValidateHook = (
     throw error('custom-field-definitions', 'key', 'Custom field key must contain at least one letter or number.', req)
   }
   data.key = normalized
+  return data
+}
+
+export const normalizeCustomFieldSortOrder: CollectionBeforeValidateHook = ({ data, originalDoc, req }) => {
+  if (!data || !Object.prototype.hasOwnProperty.call(data, 'sortOrder')) return data
+  const value = data.sortOrder ?? originalDoc?.sortOrder
+  if (value === null || value === undefined || value === '') return data
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) {
+    throw error('custom-field-definitions', 'sortOrder', 'Sort order must be a non-negative whole number.', req)
+  }
   return data
 }
 
@@ -120,14 +134,26 @@ export const maintainCustomFieldArchiveTimestamp: CollectionBeforeChangeHook = (
   return data
 }
 
-const valuePresence = (data: Record<string, any>) => ({
-  text: data.textValue !== undefined && data.textValue !== null && data.textValue !== '',
-  number: data.numberValue !== undefined && data.numberValue !== null,
-  boolean: data.booleanValue !== undefined && data.booleanValue !== null,
-  date: data.dateValue !== undefined && data.dateValue !== null && data.dateValue !== '',
-  single: data.singleSelectValue !== undefined && data.singleSelectValue !== null && data.singleSelectValue !== '',
-  multi: Array.isArray(data.multiSelectValue) && data.multiSelectValue.length > 0,
-})
+export const preventCustomFieldDefinitionDeleteWhenReferenced: CollectionBeforeDeleteHook = async ({ id, req }) => {
+  const values = await req.payload.find({
+    collection: 'contact-custom-field-values',
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+    req,
+    where: { field: { equals: id } },
+  })
+  if (values.totalDocs > 0) {
+    throw error(
+      'custom-field-definitions',
+      'status',
+      'Archive custom field definitions referenced by Contact values instead of deleting them.',
+      req,
+    )
+  }
+}
+
+const populated = (value: unknown): boolean => value !== undefined && value !== null && value !== ''
 
 export const validateContactCustomFieldValue: CollectionBeforeChangeHook = async ({ data, originalDoc, req }) => {
   if (!data) return data
@@ -158,21 +184,43 @@ export const validateContactCustomFieldValue: CollectionBeforeChangeHook = async
   }
 
   const merged = { ...(originalDoc ?? {}), ...data }
-  const presence = valuePresence(merged)
-  const activeKeys = Object.entries(presence).filter(([, present]) => present).map(([key]) => key)
-  const expectedKey: Record<string, string> = {
-    'short-text': 'text',
-    'long-text': 'text',
-    number: 'number',
-    boolean: 'boolean',
-    date: 'date',
-    'single-select': 'single',
-    'multi-select': 'multi',
+  const type = String(field.type)
+  const wrongValue = (allowed: string[]) => {
+    const storage = ['textValue', 'numberValue', 'booleanValue', 'dateValue', 'singleSelectValue', 'multiSelectValue']
+    return storage.some((key) => {
+      if (allowed.includes(key)) return false
+      if (key === 'booleanValue') return merged[key] === true
+      if (key === 'multiSelectValue') return Array.isArray(merged[key]) && merged[key].length > 0
+      return populated(merged[key])
+    })
   }
-  const expected = expectedKey[String(field.type)]
 
-  if (!expected || activeKeys.length !== 1 || activeKeys[0] !== expected) {
-    throw error('contact-custom-field-values', 'field', `Value must use exactly the storage field for custom type ${String(field.type)}.`, req)
+  if (type === 'short-text' || type === 'long-text') {
+    if (!populated(merged.textValue) || wrongValue(['textValue'])) {
+      throw error('contact-custom-field-values', 'textValue', 'Text custom fields require exactly one text value.', req)
+    }
+  } else if (type === 'number') {
+    if (typeof merged.numberValue !== 'number' || !Number.isFinite(merged.numberValue) || wrongValue(['numberValue'])) {
+      throw error('contact-custom-field-values', 'numberValue', 'Number custom fields require exactly one finite numeric value.', req)
+    }
+  } else if (type === 'boolean') {
+    if (typeof merged.booleanValue !== 'boolean' || wrongValue(['booleanValue'])) {
+      throw error('contact-custom-field-values', 'booleanValue', 'Boolean custom fields require exactly one boolean value.', req)
+    }
+  } else if (type === 'date') {
+    if (!populated(merged.dateValue) || Number.isNaN(Date.parse(String(merged.dateValue))) || wrongValue(['dateValue'])) {
+      throw error('contact-custom-field-values', 'dateValue', 'Date custom fields require exactly one valid date value.', req)
+    }
+  } else if (type === 'single-select') {
+    if (!populated(merged.singleSelectValue) || wrongValue(['singleSelectValue'])) {
+      throw error('contact-custom-field-values', 'singleSelectValue', 'Single-select custom fields require exactly one selected value.', req)
+    }
+  } else if (type === 'multi-select') {
+    if (!Array.isArray(merged.multiSelectValue) || merged.multiSelectValue.length === 0 || wrongValue(['multiSelectValue'])) {
+      throw error('contact-custom-field-values', 'multiSelectValue', 'Multi-select custom fields require at least one selected value.', req)
+    }
+  } else {
+    throw error('contact-custom-field-values', 'field', `Unsupported custom field type ${type}.`, req)
   }
 
   const allowedOptions = new Set((field.options ?? []).map((option) => String(option.value ?? '')))
@@ -183,6 +231,9 @@ export const validateContactCustomFieldValue: CollectionBeforeChangeHook = async
     const selected = Array.isArray(merged.multiSelectValue) ? merged.multiSelectValue : []
     if (selected.some((value: any) => !allowedOptions.has(String(value)))) {
       throw error('contact-custom-field-values', 'multiSelectValue', 'Every selected value must be configured for this custom field.', req)
+    }
+    if (new Set(selected.map(String)).size !== selected.length) {
+      throw error('contact-custom-field-values', 'multiSelectValue', 'A multi-select value cannot contain duplicate options.', req)
     }
   }
 
