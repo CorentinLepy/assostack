@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url'
 
 import { isPlatformAdmin } from './access/organizations'
 import { Contacts } from './collections/Contacts'
+import { Interactions } from './collections/Interactions'
 import { Media } from './collections/Media'
 import { Organizations } from './collections/Organizations'
 import { Pages } from './collections/Pages'
@@ -31,7 +32,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Organizations, Users, Contacts, Media, Pages, Posts],
+  collections: [Organizations, Users, Contacts, Interactions, Media, Pages, Posts],
   cors: [publicWebURL],
   csrf: [publicWebURL],
   db: postgresAdapter({
@@ -60,6 +61,7 @@ export default buildConfig({
     multiTenantPlugin({
       collections: {
         contacts: {},
+        interactions: {},
         media: {},
         pages: {},
         posts: {},
