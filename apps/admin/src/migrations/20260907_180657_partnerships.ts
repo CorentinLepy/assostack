@@ -35,7 +35,8 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"note" varchar,
   	"created_by_id" integer,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+  	CONSTRAINT "partnerships_dates_check" CHECK ("starts_at" IS NULL OR "ends_at" IS NULL OR "ends_at" >= "starts_at")
   );
   
   ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "partnership_levels_id" integer;
@@ -49,6 +50,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "partnership_levels_organization_idx" ON "partnership_levels" USING btree ("organization_id");
   CREATE INDEX "partnership_levels_name_idx" ON "partnership_levels" USING btree ("name");
   CREATE INDEX "partnership_levels_key_idx" ON "partnership_levels" USING btree ("key");
+  CREATE UNIQUE INDEX "partnership_levels_organization_key_unique" ON "partnership_levels" USING btree ("organization_id", "key");
   CREATE INDEX "partnership_levels_status_idx" ON "partnership_levels" USING btree ("status");
   CREATE INDEX "partnership_levels_archived_at_idx" ON "partnership_levels" USING btree ("archived_at");
   CREATE INDEX "partnership_levels_sort_order_idx" ON "partnership_levels" USING btree ("sort_order");
@@ -57,6 +59,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "partnerships_organization_idx" ON "partnerships" USING btree ("organization_id");
   CREATE INDEX "partnerships_name_idx" ON "partnerships" USING btree ("name");
   CREATE INDEX "partnerships_key_idx" ON "partnerships" USING btree ("key");
+  CREATE UNIQUE INDEX "partnerships_organization_key_unique" ON "partnerships" USING btree ("organization_id", "key");
   CREATE INDEX "partnerships_partner_idx" ON "partnerships" USING btree ("partner_id");
   CREATE INDEX "partnerships_primary_contact_idx" ON "partnerships" USING btree ("primary_contact_id");
   CREATE INDEX "partnerships_level_idx" ON "partnerships" USING btree ("level_id");
@@ -77,18 +80,16 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "partnership_levels" DISABLE ROW LEVEL SECURITY;
+  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_partnership_levels_fk";
+  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_partnerships_fk";
+  DROP INDEX IF EXISTS "payload_locked_documents_rels_partnership_levels_id_idx";
+  DROP INDEX IF EXISTS "payload_locked_documents_rels_partnerships_id_idx";
+  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "partnership_levels_id";
+  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "partnerships_id";
+  ALTER TABLE "partnership_levels" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "partnerships" DISABLE ROW LEVEL SECURITY;
-  DROP TABLE "partnership_levels" CASCADE;
   DROP TABLE "partnerships" CASCADE;
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_partnership_levels_fk";
-  
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_partnerships_fk";
-  
-  DROP INDEX "payload_locked_documents_rels_partnership_levels_id_idx";
-  DROP INDEX "payload_locked_documents_rels_partnerships_id_idx";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "partnership_levels_id";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "partnerships_id";
+  DROP TABLE "partnership_levels" CASCADE;
   DROP TYPE "public"."enum_partnership_levels_status";
   DROP TYPE "public"."enum_partnerships_kind";
   DROP TYPE "public"."enum_partnerships_status";`)
