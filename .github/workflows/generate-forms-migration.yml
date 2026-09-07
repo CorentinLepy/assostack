@@ -1,0 +1,47 @@
+name: Generate forms migration
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: assostack
+          POSTGRES_PASSWORD: assostack-ci
+          POSTGRES_DB: assostack
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U assostack -d assostack"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://assostack:assostack-ci@127.0.0.1:5432/assostack
+      PAYLOAD_SECRET: generation-only-value
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3001
+      PUBLIC_WEB_URL: http://localhost:4321
+      NODE_ENV: production
+      PAYLOAD_DB_PUSH: "false"
+      ASSOSTACK_JOBS_AUTORUN: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable && corepack prepare pnpm@11.25.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:migrate
+      - run: pnpm --filter @assostack/admin migrate:create forms_submissions --force-accept-warning
+      - uses: actions/upload-artifact@v4
+        with:
+          name: forms-migration
+          path: apps/admin/src/migrations/
+          if-no-files-found: error
