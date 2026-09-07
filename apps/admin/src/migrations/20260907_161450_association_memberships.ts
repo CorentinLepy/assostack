@@ -42,6 +42,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "membership_types_organization_idx" ON "membership_types" USING btree ("organization_id");
   CREATE INDEX "membership_types_name_idx" ON "membership_types" USING btree ("name");
   CREATE INDEX "membership_types_key_idx" ON "membership_types" USING btree ("key");
+  CREATE UNIQUE INDEX "membership_types_organization_key_unique" ON "membership_types" USING btree ("organization_id", "key");
   CREATE INDEX "membership_types_status_idx" ON "membership_types" USING btree ("status");
   CREATE INDEX "membership_types_archived_at_idx" ON "membership_types" USING btree ("archived_at");
   CREATE INDEX "membership_types_updated_at_idx" ON "membership_types" USING btree ("updated_at");
@@ -53,6 +54,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "memberships_starts_at_idx" ON "memberships" USING btree ("starts_at");
   CREATE INDEX "memberships_ends_at_idx" ON "memberships" USING btree ("ends_at");
   CREATE INDEX "memberships_membership_number_idx" ON "memberships" USING btree ("membership_number");
+  CREATE UNIQUE INDEX "memberships_organization_membership_number_unique" ON "memberships" USING btree ("organization_id", "membership_number") WHERE "membership_number" IS NOT NULL;
   CREATE INDEX "memberships_external_reference_idx" ON "memberships" USING btree ("external_reference");
   CREATE INDEX "memberships_created_by_idx" ON "memberships" USING btree ("created_by_id");
   CREATE INDEX "memberships_updated_at_idx" ON "memberships" USING btree ("updated_at");
@@ -65,18 +67,16 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "membership_types" DISABLE ROW LEVEL SECURITY;
+  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_membership_types_fk";
+  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_memberships_fk";
+  DROP INDEX IF EXISTS "payload_locked_documents_rels_membership_types_id_idx";
+  DROP INDEX IF EXISTS "payload_locked_documents_rels_memberships_id_idx";
+  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "membership_types_id";
+  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "memberships_id";
+  ALTER TABLE "membership_types" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "memberships" DISABLE ROW LEVEL SECURITY;
-  DROP TABLE "membership_types" CASCADE;
   DROP TABLE "memberships" CASCADE;
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_membership_types_fk";
-  
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_memberships_fk";
-  
-  DROP INDEX "payload_locked_documents_rels_membership_types_id_idx";
-  DROP INDEX "payload_locked_documents_rels_memberships_id_idx";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "membership_types_id";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "memberships_id";
+  DROP TABLE "membership_types" CASCADE;
   DROP TYPE "public"."enum_membership_types_status";
   DROP TYPE "public"."enum_memberships_status";`)
 }
