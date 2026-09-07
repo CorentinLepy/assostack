@@ -4,6 +4,7 @@ import * as migration_20260906_210900_cms_slug_uniqueness from './20260906_21090
 import * as migration_20260906_214736_site_configuration from './20260906_214736_site_configuration';
 import * as migration_20260906_223611_page_sections from './20260906_223611_page_sections';
 import * as migration_20260906_225243_builtin_routes from './20260906_225243_builtin_routes';
+import * as migration_20260907_063504_site_sync_job from './20260907_063504_site_sync_job';
 
 export const migrations = [
   {
@@ -34,6 +35,11 @@ export const migrations = [
   {
     up: migration_20260906_225243_builtin_routes.up,
     down: migration_20260906_225243_builtin_routes.down,
-    name: '20260906_225243_builtin_routes'
+    name: '20260906_225243_builtin_routes',
+  },
+  {
+    up: migration_20260907_063504_site_sync_job.up,
+    down: migration_20260907_063504_site_sync_job.down,
+    name: '20260907_063504_site_sync_job'
   },
 ];
