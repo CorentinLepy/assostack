@@ -11,6 +11,7 @@ import { Contacts } from './collections/Contacts'
 import { ContactCustomFieldValues } from './collections/ContactCustomFieldValues'
 import { ContactTags } from './collections/ContactTags'
 import { CustomFieldDefinitions } from './collections/CustomFieldDefinitions'
+import { Documents } from './collections/Documents'
 import { EventRegistrations } from './collections/EventRegistrations'
 import { Events } from './collections/Events'
 import { FormSubmissions } from './collections/FormSubmissions'
@@ -72,6 +73,7 @@ export default buildConfig({
     Tasks,
     PrivacyRecords,
     FormSubmissions,
+    Documents,
     Media,
     Pages,
     Posts,
@@ -122,6 +124,7 @@ export default buildConfig({
         interactions: {},
         notes: {},
         tasks: {},
+        documents: {},
         media: {},
         pages: {},
         posts: {},

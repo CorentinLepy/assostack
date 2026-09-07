@@ -40,7 +40,7 @@ Goal: provide the website/content capabilities needed by real organizations.
 
 Exit criteria: an organization can publish and maintain a usable public website without modifying product code.
 
-## 0.3 CRM — in progress
+## 0.3 CRM — complete
 
 Goal: establish the reusable relationship-management core.
 
@@ -51,23 +51,21 @@ Goal: establish the reusable relationship-management core.
 - notes
 - tasks and reminders
 - custom fields strategy — tenant-safe Contact custom field definitions and typed values implemented
-- import/export foundation
+- tenant-safe CSV import/export foundation
 - privacy/consent metadata
 
 Exit criteria: an organization can manage its contact base and relationship history reliably.
 
-## 0.4 Association Operations
+## 0.4 Association Operations — complete
 
 Goal: cover common association workflows through reusable modules.
 
-- memberships
-- membership periods/status
-- volunteers
-- events
-- registrations/participation
+- memberships and membership periods/status
+- volunteers, shifts and assignments
+- events and registrations/participation
 - sponsors/partners
 - forms and submissions
-- documents
+- tenant-safe private association documents
 
 Exit criteria: Team SMH can operate its core association workflows on AssoStack without Team SMH-specific logic in the product core.
 
