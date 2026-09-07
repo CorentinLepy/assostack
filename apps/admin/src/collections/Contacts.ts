@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { canManageAnyOrganization, organizationRoleAccess } from '../access/organizations'
+import { validateContactTagsBelongToOrganization } from '../crm/contact-tag-hooks'
 import {
   maintainContactArchiveTimestamp,
   normalizeContactIdentity,
@@ -28,6 +29,7 @@ export const Contacts: CollectionConfig = {
     beforeValidate: [normalizeContactIdentity],
     beforeChange: [
       assertOrganizationWriteAccess(['organization-admin', 'editor']),
+      validateContactTagsBelongToOrganization,
       maintainContactArchiveTimestamp,
     ],
   },
@@ -70,6 +72,19 @@ export const Contacts: CollectionConfig = {
         position: 'sidebar',
         readOnly: true,
         description: 'Managed automatically when the contact enters or leaves the archived state.',
+      },
+    },
+    {
+      name: 'tags',
+      type: 'relationship',
+      relationTo: 'contact-tags',
+      hasMany: true,
+      maxRows: 50,
+      index: true,
+      admin: {
+        position: 'sidebar',
+        description:
+          'Optional CRM taxonomy. Every assigned Tag is validated server-side against this Contact organization.',
       },
     },
     {
