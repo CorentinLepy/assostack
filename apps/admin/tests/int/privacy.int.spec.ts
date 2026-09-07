@@ -5,19 +5,19 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
 let payload: Payload
 
-const asRequestUser = <T extends Record<string, unknown>>(user: T) => ({
+const asRequestUser = <T extends object>(user: T) => ({
   ...structuredClone(user),
   collection: 'users' as const,
 })
 
 const persistedRequestUser = async (payload: Payload, user: { id: number | string }) =>
   asRequestUser(
-    (await payload.findByID({
+    await payload.findByID({
       collection: 'users',
       id: user.id,
       depth: 0,
       overrideAccess: true,
-    })) as Record<string, unknown>,
+    }),
   )
 
 const relationshipID = (value: any) =>
