@@ -1,4 +1,8 @@
-import type { CollectionBeforeChangeHook, PayloadRequest } from 'payload'
+import type {
+  CollectionBeforeChangeHook,
+  CollectionBeforeValidateHook,
+  PayloadRequest,
+} from 'payload'
 import { ValidationError } from 'payload'
 
 import {
@@ -11,12 +15,43 @@ type DocumentLike = Record<string, any>
 
 const relationshipIDs = (value: unknown): RelationshipID[] => {
   const values = Array.isArray(value) ? value : value === null || value === undefined ? [] : [value]
+  const unique = new Map<string, RelationshipID>()
 
-  return values.flatMap((item) => {
+  for (const item of values) {
     const id = getRelationshipID(item as any)
-    return id === null ? [] : [id]
-  })
+    if (id !== null) {
+      unique.set(String(id), id)
+    }
+  }
+
+  return [...unique.values()]
 }
+
+const sameRelationshipID = (left: unknown, right: RelationshipID): boolean => {
+  const leftID = getRelationshipID(left as any)
+  return leftID !== null && String(leftID) === String(right)
+}
+
+const valueFromUpdate = (
+  current: DocumentLike,
+  previous: DocumentLike,
+  field: string,
+): unknown => (Object.prototype.hasOwnProperty.call(current, field) ? current[field] : previous[field])
+
+const validationError = ({
+  message,
+  path,
+  req,
+}: {
+  message: string
+  path: string
+  req: PayloadRequest
+}) =>
+  new ValidationError({
+    collection: 'tasks',
+    errors: [{ message, path }],
+    req,
+  })
 
 const validateContacts = async ({
   contactIDs,
@@ -37,21 +72,46 @@ const validateContacts = async ({
         req,
       })
 
-      if (String(getRelationshipID(contact.organization as any)) !== String(organizationID)) {
+      if (!sameRelationshipID(contact.organization, organizationID)) {
         throw new Error('cross-tenant contact')
       }
     } catch {
-      throw new ValidationError({
-        collection: 'tasks',
-        errors: [
-          {
-            message: 'Every related Contact must belong to the same organization as the task.',
-            path: 'contacts',
-          },
-        ],
+      throw validationError({
+        message: 'Every related Contact must belong to the same organization as the task.',
+        path: 'contacts',
         req,
       })
     }
+  }
+}
+
+const validateRelatedInteraction = async ({
+  interactionID,
+  organizationID,
+  req,
+}: {
+  interactionID: RelationshipID
+  organizationID: RelationshipID
+  req: PayloadRequest
+}) => {
+  try {
+    const interaction = await req.payload.findByID({
+      collection: 'interactions',
+      id: interactionID,
+      depth: 0,
+      overrideAccess: true,
+      req,
+    })
+
+    if (!sameRelationshipID(interaction.organization, organizationID)) {
+      throw new Error('cross-tenant interaction')
+    }
+  } catch {
+    throw validationError({
+      message: 'The related Interaction must belong to the same organization as the task.',
+      path: 'relatedInteraction',
+      req,
+    })
   }
 }
 
@@ -77,17 +137,44 @@ const validateAssignee = async ({
       throw new Error('assignee is not staff in task tenant')
     }
   } catch {
-    throw new ValidationError({
-      collection: 'tasks',
-      errors: [
-        {
-          message: 'The assignee must be a staff user for the task organization.',
-          path: 'assignee',
-        },
-      ],
+    throw validationError({
+      message: 'The assignee must be a staff user for the task organization.',
+      path: 'assignee',
       req,
     })
   }
+}
+
+export const validateTaskReminderWindow: CollectionBeforeValidateHook = ({
+  data,
+  originalDoc,
+  req,
+}) => {
+  const current = (data ?? {}) as DocumentLike
+  const previous = (originalDoc ?? {}) as DocumentLike
+  const dueAt = valueFromUpdate(current, previous, 'dueAt')
+  const remindAt = valueFromUpdate(current, previous, 'remindAt')
+
+  if (typeof dueAt !== 'string' || typeof remindAt !== 'string') {
+    return data
+  }
+
+  const dueTimestamp = Date.parse(dueAt)
+  const reminderTimestamp = Date.parse(remindAt)
+
+  if (
+    Number.isFinite(dueTimestamp) &&
+    Number.isFinite(reminderTimestamp) &&
+    reminderTimestamp > dueTimestamp
+  ) {
+    throw validationError({
+      message: 'The reminder must be scheduled at or before the task due date.',
+      path: 'remindAt',
+      req,
+    })
+  }
+
+  return data
 }
 
 export const validateTaskRelationships: CollectionBeforeChangeHook = async ({
@@ -100,28 +187,24 @@ export const validateTaskRelationships: CollectionBeforeChangeHook = async ({
   const organizationID = getRelationshipID(current.organization ?? previous.organization)
 
   if (organizationID === null) {
-    throw new ValidationError({
-      collection: 'tasks',
-      errors: [
-        {
-          message: 'A task must belong to an organization.',
-          path: 'organization',
-        },
-      ],
+    throw validationError({
+      message: 'A task must belong to an organization.',
+      path: 'organization',
       req,
     })
   }
 
-  const contactIDs = relationshipIDs(
-    Object.prototype.hasOwnProperty.call(current, 'contacts') ? current.contacts : previous.contacts,
-  )
+  const contactIDs = relationshipIDs(valueFromUpdate(current, previous, 'contacts'))
   if (contactIDs.length > 0) {
     await validateContacts({ contactIDs, organizationID, req })
   }
 
-  const assigneeID = getRelationshipID(
-    (Object.prototype.hasOwnProperty.call(current, 'assignee') ? current.assignee : previous.assignee) as any,
-  )
+  const interactionID = getRelationshipID(valueFromUpdate(current, previous, 'relatedInteraction') as any)
+  if (interactionID !== null) {
+    await validateRelatedInteraction({ interactionID, organizationID, req })
+  }
+
+  const assigneeID = getRelationshipID(valueFromUpdate(current, previous, 'assignee') as any)
   if (assigneeID !== null) {
     await validateAssignee({ assigneeID, organizationID, req })
   }
@@ -137,18 +220,23 @@ export const maintainTaskLifecycle: CollectionBeforeChangeHook = ({ data, operat
   const nextStatus = data.status ?? originalDoc?.status ?? 'open'
   const previousStatus = originalDoc?.status
 
-  if (nextStatus === 'completed' && previousStatus !== 'completed') {
-    data.completedAt = new Date().toISOString()
-    data.completedBy = req.user?.id ?? null
-  } else if (nextStatus !== 'completed') {
+  if (nextStatus === 'completed') {
+    if (previousStatus !== 'completed') {
+      data.completedAt = new Date().toISOString()
+      data.completedBy = req.user?.id ?? null
+    } else {
+      data.completedAt = originalDoc?.completedAt ?? null
+      data.completedBy = getRelationshipID(originalDoc?.completedBy as any)
+    }
+  } else {
     data.completedAt = null
     data.completedBy = null
   }
 
   if (operation === 'create') {
     data.createdBy = req.user?.id ?? null
-  } else if (originalDoc?.createdBy !== undefined) {
-    data.createdBy = originalDoc.createdBy
+  } else {
+    data.createdBy = getRelationshipID(originalDoc?.createdBy as any)
   }
 
   return data
