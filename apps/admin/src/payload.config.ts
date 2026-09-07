@@ -11,6 +11,8 @@ import { Contacts } from './collections/Contacts'
 import { ContactTags } from './collections/ContactTags'
 import { Interactions } from './collections/Interactions'
 import { Media } from './collections/Media'
+import { Memberships } from './collections/Memberships'
+import { MembershipTypes } from './collections/MembershipTypes'
 import { Organizations } from './collections/Organizations'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
@@ -45,6 +47,8 @@ export default buildConfig({
     Interactions,
     Tasks,
     PrivacyRecords,
+    MembershipTypes,
+    Memberships,
     Media,
     Pages,
     Posts,
@@ -79,6 +83,8 @@ export default buildConfig({
         'contact-tags': {},
         'privacy-purposes': {},
         'privacy-records': {},
+        'membership-types': {},
+        memberships: {},
         contacts: {},
         interactions: {},
         tasks: {},
