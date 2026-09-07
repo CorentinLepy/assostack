@@ -13,6 +13,7 @@ import { Media } from './collections/Media'
 import { Organizations } from './collections/Organizations'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
+import { Tasks } from './collections/Tasks'
 import { Users } from './collections/Users'
 import { publicContentEndpoints } from './public-api/endpoints'
 import { SITE_SYNC_QUEUE, siteSyncTask } from './site-rebuild/task'
@@ -32,7 +33,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Organizations, Users, Contacts, Interactions, Media, Pages, Posts],
+  collections: [Organizations, Users, Contacts, Interactions, Tasks, Media, Pages, Posts],
   cors: [publicWebURL],
   csrf: [publicWebURL],
   db: postgresAdapter({
@@ -62,6 +63,7 @@ export default buildConfig({
       collections: {
         contacts: {},
         interactions: {},
+        tasks: {},
         media: {},
         pages: {},
         posts: {},
