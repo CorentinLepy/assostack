@@ -13,6 +13,8 @@ import { ContactTags } from './collections/ContactTags'
 import { CustomFieldDefinitions } from './collections/CustomFieldDefinitions'
 import { EventRegistrations } from './collections/EventRegistrations'
 import { Events } from './collections/Events'
+import { FormSubmissions } from './collections/FormSubmissions'
+import { Forms } from './collections/Forms'
 import { Interactions } from './collections/Interactions'
 import { Memberships } from './collections/Memberships'
 import { MembershipTypes } from './collections/MembershipTypes'
@@ -56,6 +58,7 @@ export default buildConfig({
     PrivacyPurposes,
     MembershipTypes,
     PartnershipLevels,
+    Forms,
     Contacts,
     ContactCustomFieldValues,
     Memberships,
@@ -68,6 +71,7 @@ export default buildConfig({
     Notes,
     Tasks,
     PrivacyRecords,
+    FormSubmissions,
     Media,
     Pages,
     Posts,
@@ -109,8 +113,10 @@ export default buildConfig({
         'volunteer-shifts': {},
         'volunteer-assignments': {},
         'partnership-levels': {},
+        'form-submissions': {},
         memberships: {},
         events: {},
+        forms: {},
         partnerships: {},
         contacts: {},
         interactions: {},
