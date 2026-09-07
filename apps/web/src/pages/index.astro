@@ -44,6 +44,9 @@ const pillars = [
       pages={publicSite.pages}
       title={publicSite.home.meta.title ?? publicSite.organization.identity.siteTitle}
       description={publicSite.home.meta.description ?? publicSite.home.summary}
+      canonicalPath="/"
+      image={publicSite.home.meta.image}
+      updatedAt={publicSite.home.updatedAt}
     >
       {publicSite.home.sections.length > 0 ? (
         <PublicPageSections
