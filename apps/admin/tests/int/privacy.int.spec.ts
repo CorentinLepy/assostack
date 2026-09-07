@@ -361,6 +361,17 @@ describe('CRM privacy purposes and history', () => {
   })
 
   test('keeps Privacy Purpose and Record reads isolated between organizations', async () => {
+    const debugUserA = await persistedRequestUser(payload, adminA)
+    const debugAccessResult = await payload.collections['privacy-purposes'].config.access.read?.({
+      req: { user: debugUserA },
+    } as any)
+    console.log('PRIVACY_DEBUG_USER', JSON.stringify({
+      id: debugUserA.id,
+      collection: debugUserA.collection,
+      platformRoles: (debugUserA as any).platformRoles,
+      organizations: (debugUserA as any).organizations,
+    }))
+    console.log('PRIVACY_DEBUG_ACCESS', JSON.stringify(debugAccessResult))
 
     const purposesA = await payload.find({
       collection: 'privacy-purposes',
