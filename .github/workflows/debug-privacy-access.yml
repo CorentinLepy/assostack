@@ -1,0 +1,44 @@
+name: Debug privacy access
+
+on:
+  push:
+    branches:
+      - crm/privacy-consent
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Add temporary ACL diagnostics
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('apps/admin/tests/int/privacy.int.spec.ts')
+          text = path.read_text()
+          marker = """  test('keeps Privacy Purpose and Record reads isolated between organizations', async () => {\n    const purposesA = await payload.find({\n"""
+          replacement = """  test('keeps Privacy Purpose and Record reads isolated between organizations', async () => {\n    const debugUserA = await persistedRequestUser(payload, adminA)\n    const debugAccessResult = await payload.collections['privacy-purposes'].config.access.read?.({\n      req: { user: debugUserA },\n    } as any)\n    console.log('PRIVACY_DEBUG_USER', JSON.stringify({\n      id: debugUserA.id,\n      collection: debugUserA.collection,\n      platformRoles: (debugUserA as any).platformRoles,\n      organizations: (debugUserA as any).organizations,\n    }))\n    console.log('PRIVACY_DEBUG_ACCESS', JSON.stringify(debugAccessResult))\n\n    const purposesA = await payload.find({\n"""
+          if 'PRIVACY_DEBUG_ACCESS' not in text:
+              if marker not in text:
+                  raise SystemExit('isolation test marker not found')
+              text = text.replace(marker, replacement, 1)
+          path.write_text(text)
+          PY
+
+      - name: Commit diagnostics when needed
+        run: |
+          if git diff --quiet -- apps/admin/tests/int/privacy.int.spec.ts; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/admin/tests/int/privacy.int.spec.ts
+          git commit -m "test(crm): inspect privacy access result"
+          git push origin HEAD:crm/privacy-consent
