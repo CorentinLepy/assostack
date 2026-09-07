@@ -1,0 +1,45 @@
+name: Fix privacy test types
+
+on:
+  push:
+    branches:
+      - crm/privacy-consent
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Simplify persisted user typing
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('apps/admin/tests/int/privacy.int.spec.ts')
+          text = path.read_text()
+          text = text.replace(
+              'const asRequestUser = <T extends Record<string, unknown>>(user: T) => ({',
+              'const asRequestUser = <T extends object>(user: T) => ({',
+              1,
+          )
+          text = text.replace('    (await payload.findByID({', '    await payload.findByID({', 1)
+          text = text.replace('    })) as Record<string, unknown>,', '    }),', 1)
+          path.write_text(text)
+          PY
+
+      - name: Commit fixture fix when needed
+        run: |
+          if git diff --quiet -- apps/admin/tests/int/privacy.int.spec.ts; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/admin/tests/int/privacy.int.spec.ts
+          git commit -m "test(crm): simplify persisted privacy user typing"
+          git push origin HEAD:crm/privacy-consent
