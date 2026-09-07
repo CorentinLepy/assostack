@@ -10,7 +10,12 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "payload_jobs_log" ALTER COLUMN "task_slug" SET DATA TYPE text;
+   -- A rollback removes the siteSync task from Payload's job schema. Pending/completed
+  -- siteSync records must therefore be removed before PostgreSQL can narrow the enums.
+  DELETE FROM "payload_jobs_log" WHERE "task_slug" = 'siteSync';
+  DELETE FROM "payload_jobs" WHERE "task_slug" = 'siteSync';
+
+  ALTER TABLE "payload_jobs_log" ALTER COLUMN "task_slug" SET DATA TYPE text;
   DROP TYPE "public"."enum_payload_jobs_log_task_slug";
   CREATE TYPE "public"."enum_payload_jobs_log_task_slug" AS ENUM('inline', 'schedulePublish');
   ALTER TABLE "payload_jobs_log" ALTER COLUMN "task_slug" SET DATA TYPE "public"."enum_payload_jobs_log_task_slug" USING "task_slug"::"public"."enum_payload_jobs_log_task_slug";
