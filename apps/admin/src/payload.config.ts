@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url'
 
 import { isPlatformAdmin } from './access/organizations'
 import { Contacts } from './collections/Contacts'
+import { ContactTags } from './collections/ContactTags'
 import { Interactions } from './collections/Interactions'
 import { Media } from './collections/Media'
 import { Organizations } from './collections/Organizations'
@@ -33,7 +34,17 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Organizations, Users, Contacts, Interactions, Tasks, Media, Pages, Posts],
+  collections: [
+    Organizations,
+    Users,
+    ContactTags,
+    Contacts,
+    Interactions,
+    Tasks,
+    Media,
+    Pages,
+    Posts,
+  ],
   cors: [publicWebURL],
   csrf: [publicWebURL],
   db: postgresAdapter({
@@ -61,6 +72,7 @@ export default buildConfig({
   plugins: [
     multiTenantPlugin({
       collections: {
+        'contact-tags': {},
         contacts: {},
         interactions: {},
         tasks: {},
