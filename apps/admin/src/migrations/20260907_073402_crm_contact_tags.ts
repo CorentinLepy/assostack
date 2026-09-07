@@ -30,6 +30,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "contact_tags_organization_idx" ON "contact_tags" USING btree ("organization_id");
   CREATE INDEX "contact_tags_name_idx" ON "contact_tags" USING btree ("name");
   CREATE INDEX "contact_tags_slug_idx" ON "contact_tags" USING btree ("slug");
+  CREATE UNIQUE INDEX "contact_tags_organization_slug_unique" ON "contact_tags" USING btree ("organization_id", "slug");
   CREATE INDEX "contact_tags_status_idx" ON "contact_tags" USING btree ("status");
   CREATE INDEX "contact_tags_archived_at_idx" ON "contact_tags" USING btree ("archived_at");
   CREATE INDEX "contact_tags_updated_at_idx" ON "contact_tags" USING btree ("updated_at");
@@ -44,13 +45,10 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "contact_tags" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "contacts_rels" DISABLE ROW LEVEL SECURITY;
-  DROP TABLE "contact_tags" CASCADE;
-  DROP TABLE "contacts_rels" CASCADE;
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_contact_tags_fk";
-  
-  DROP INDEX "payload_locked_documents_rels_contact_tags_id_idx";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "contact_tags_id";
-  DROP TYPE "public"."enum_contact_tags_status";`)
+  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_contact_tags_fk";
+  DROP INDEX IF EXISTS "payload_locked_documents_rels_contact_tags_id_idx";
+  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "contact_tags_id";
+  DROP TABLE IF EXISTS "contacts_rels" CASCADE;
+  DROP TABLE IF EXISTS "contact_tags" CASCADE;
+  DROP TYPE IF EXISTS "public"."enum_contact_tags_status";`)
 }
