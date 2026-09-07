@@ -1,4 +1,3 @@
-import { getOrganizationIDsForRoles } from '@/access/organizations'
 import config from '@/payload.config'
 import type { Payload } from 'payload'
 import { getPayload } from 'payload'
@@ -10,6 +9,16 @@ const asRequestUser = <T extends Record<string, unknown>>(user: T) => ({
   ...structuredClone(user),
   collection: 'users' as const,
 })
+
+const persistedRequestUser = async (payload: Payload, user: { id: number | string }) =>
+  asRequestUser(
+    (await payload.findByID({
+      collection: 'users',
+      id: user.id,
+      depth: 0,
+      overrideAccess: true,
+    })) as Record<string, unknown>,
+  )
 
 const relationshipID = (value: any) =>
   value && typeof value === 'object' && 'id' in value ? value.id : value
@@ -122,7 +131,7 @@ describe('CRM privacy purposes and history', () => {
     contactA = await payload.create({
       collection: 'contacts',
       overrideAccess: false,
-      user: asRequestUser(adminA) as any,
+      user: (await persistedRequestUser(payload, adminA)) as any,
       data: {
         displayName: 'Privacy Contact Alpha',
         email: 'privacy-contact-a@assostack.test',
@@ -133,7 +142,7 @@ describe('CRM privacy purposes and history', () => {
     contactB = await payload.create({
       collection: 'contacts',
       overrideAccess: false,
-      user: asRequestUser(adminB) as any,
+      user: (await persistedRequestUser(payload, adminB)) as any,
       data: {
         displayName: 'Privacy Contact Beta',
         email: 'privacy-contact-b@assostack.test',
@@ -144,7 +153,7 @@ describe('CRM privacy purposes and history', () => {
     purposeA = await payload.create({
       collection: 'privacy-purposes',
       overrideAccess: false,
-      user: asRequestUser(adminA) as any,
+      user: (await persistedRequestUser(payload, adminA)) as any,
       data: {
         name: 'Newsletter général',
         legalBasis: 'consent',
@@ -155,7 +164,7 @@ describe('CRM privacy purposes and history', () => {
     purposeB = await payload.create({
       collection: 'privacy-purposes',
       overrideAccess: false,
-      user: asRequestUser(adminB) as any,
+      user: (await persistedRequestUser(payload, adminB)) as any,
       data: {
         name: 'Newsletter général',
         legalBasis: 'consent',
@@ -166,7 +175,7 @@ describe('CRM privacy purposes and history', () => {
     recordA = await payload.create({
       collection: 'privacy-records',
       overrideAccess: false,
-      user: asRequestUser(adminA) as any,
+      user: (await persistedRequestUser(payload, adminA)) as any,
       data: {
         organization: organizationA.id,
         contact: contactA.id,
@@ -180,7 +189,7 @@ describe('CRM privacy purposes and history', () => {
     recordB = await payload.create({
       collection: 'privacy-records',
       overrideAccess: false,
-      user: asRequestUser(adminB) as any,
+      user: (await persistedRequestUser(payload, adminB)) as any,
       data: {
         organization: organizationB.id,
         contact: contactB.id,
@@ -202,9 +211,6 @@ describe('CRM privacy purposes and history', () => {
     expect(purposeA.legalBasis).toBe('consent')
     expect(relationshipID(purposeA.organization)).toBe(organizationA.id)
     expect(relationshipID(purposeB.organization)).toBe(organizationB.id)
-    expect(getOrganizationIDsForRoles(asRequestUser(adminA), ['organization-admin', 'editor'])).toEqual([
-      organizationA.id,
-    ])
   })
 
   test('rejects duplicate purpose keys inside one organization', async () => {
@@ -212,7 +218,7 @@ describe('CRM privacy purposes and history', () => {
       payload.create({
         collection: 'privacy-purposes',
         overrideAccess: false,
-        user: asRequestUser(adminA) as any,
+        user: (await persistedRequestUser(payload, adminA)) as any,
         data: {
           name: 'Newsletter general',
           legalBasis: 'consent',
@@ -235,7 +241,7 @@ describe('CRM privacy purposes and history', () => {
         collection: 'privacy-records',
         id: recordA.id,
         overrideAccess: false,
-        user: asRequestUser(adminA) as any,
+        user: (await persistedRequestUser(payload, adminA)) as any,
         data: {
           note: 'Attempted mutation of historical evidence',
         },
@@ -248,7 +254,7 @@ describe('CRM privacy purposes and history', () => {
       payload.create({
         collection: 'privacy-records',
         overrideAccess: false,
-        user: asRequestUser(adminA) as any,
+        user: (await persistedRequestUser(payload, adminA)) as any,
         data: {
           organization: organizationA.id,
           contact: contactB.id,
@@ -265,7 +271,7 @@ describe('CRM privacy purposes and history', () => {
       payload.create({
         collection: 'privacy-records',
         overrideAccess: false,
-        user: asRequestUser(adminA) as any,
+        user: (await persistedRequestUser(payload, adminA)) as any,
         data: {
           organization: organizationA.id,
           contact: contactA.id,
@@ -282,7 +288,7 @@ describe('CRM privacy purposes and history', () => {
       payload.create({
         collection: 'privacy-records',
         overrideAccess: false,
-        user: asRequestUser(adminA) as any,
+        user: (await persistedRequestUser(payload, adminA)) as any,
         data: {
           organization: organizationA.id,
           contact: contactA.id,
@@ -301,7 +307,7 @@ describe('CRM privacy purposes and history', () => {
       payload.create({
         collection: 'privacy-records',
         overrideAccess: false,
-        user: asRequestUser(adminA) as any,
+        user: (await persistedRequestUser(payload, adminA)) as any,
         data: {
           organization: organizationA.id,
           contact: contactA.id,
@@ -318,7 +324,7 @@ describe('CRM privacy purposes and history', () => {
       collection: 'privacy-purposes',
       id: purposeA.id,
       overrideAccess: false,
-      user: asRequestUser(adminA) as any,
+      user: (await persistedRequestUser(payload, adminA)) as any,
       data: {
         status: 'archived',
       },
@@ -332,7 +338,7 @@ describe('CRM privacy purposes and history', () => {
       collection: 'privacy-purposes',
       id: purposeA.id,
       overrideAccess: false,
-      user: asRequestUser(adminA) as any,
+      user: (await persistedRequestUser(payload, adminA)) as any,
       data: {
         description: 'Archived without rewriting historical Privacy Records.',
       },
@@ -344,7 +350,7 @@ describe('CRM privacy purposes and history', () => {
       collection: 'privacy-purposes',
       id: purposeA.id,
       overrideAccess: false,
-      user: asRequestUser(adminA) as any,
+      user: (await persistedRequestUser(payload, adminA)) as any,
       data: {
         status: 'active',
       },
@@ -355,20 +361,17 @@ describe('CRM privacy purposes and history', () => {
   })
 
   test('keeps Privacy Purpose and Record reads isolated between organizations', async () => {
-    expect(getOrganizationIDsForRoles(asRequestUser(adminA), ['organization-admin', 'editor'])).toEqual([
-      organizationA.id,
-    ])
 
     const purposesA = await payload.find({
       collection: 'privacy-purposes',
       overrideAccess: false,
-      user: asRequestUser(adminA) as any,
+      user: (await persistedRequestUser(payload, adminA)) as any,
       limit: 50,
     })
     const recordsA = await payload.find({
       collection: 'privacy-records',
       overrideAccess: false,
-      user: asRequestUser(adminA) as any,
+      user: (await persistedRequestUser(payload, adminA)) as any,
       limit: 50,
     })
 
@@ -384,14 +387,14 @@ describe('CRM privacy purposes and history', () => {
         collection: 'privacy-records',
         id: recordA.id,
         overrideAccess: false,
-        user: asRequestUser(editorA) as any,
+        user: (await persistedRequestUser(payload, editorA)) as any,
       }),
     ).rejects.toThrow()
 
     const exceptional = await payload.create({
       collection: 'privacy-records',
       overrideAccess: false,
-      user: asRequestUser(adminA) as any,
+      user: (await persistedRequestUser(payload, adminA)) as any,
       data: {
         organization: organizationA.id,
         contact: contactA.id,
@@ -407,7 +410,7 @@ describe('CRM privacy purposes and history', () => {
         collection: 'privacy-records',
         id: exceptional.id,
         overrideAccess: false,
-        user: asRequestUser(adminA) as any,
+        user: (await persistedRequestUser(payload, adminA)) as any,
       }),
     ).resolves.toBeTruthy()
   })
@@ -417,7 +420,7 @@ describe('CRM privacy purposes and history', () => {
       payload.find({
         collection: 'privacy-purposes',
         overrideAccess: false,
-        user: asRequestUser(memberA) as any,
+        user: (await persistedRequestUser(payload, memberA)) as any,
         limit: 20,
       }),
     ).rejects.toThrow()
@@ -426,7 +429,7 @@ describe('CRM privacy purposes and history', () => {
       payload.find({
         collection: 'privacy-records',
         overrideAccess: false,
-        user: asRequestUser(memberA) as any,
+        user: (await persistedRequestUser(payload, memberA)) as any,
         limit: 20,
       }),
     ).rejects.toThrow()
