@@ -44,6 +44,7 @@ export default buildConfig({
   editor: lexicalEditor(),
   endpoints: publicContentEndpoints,
   jobs: {
+    enableConcurrencyControl: true,
     tasks: [siteSyncTask],
     autoRun: shouldAutoRunJobs
       ? [
