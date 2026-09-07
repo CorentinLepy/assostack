@@ -7,19 +7,30 @@ type RelationshipValue = number | string | { id?: number | string } | null | und
 
 const relationshipIDs = (value: unknown): Array<number | string> => {
   const items = Array.isArray(value) ? value : value === null || value === undefined ? [] : [value]
+  const ids = new Map<string, number | string>()
 
-  return items.flatMap((item) => {
+  for (const item of items) {
     if (typeof item === 'number' || typeof item === 'string') {
-      return [item]
+      ids.set(String(item), item)
+      continue
     }
 
     if (item && typeof item === 'object' && 'id' in item) {
       const id = (item as { id?: unknown }).id
-      return typeof id === 'number' || typeof id === 'string' ? [id] : []
+      if (typeof id === 'number' || typeof id === 'string') {
+        ids.set(String(id), id)
+      }
     }
+  }
 
-    return []
-  })
+  return [...ids.values()]
+}
+
+const sameRelationshipID = (left: RelationshipValue, right: RelationshipValue): boolean => {
+  const leftID = getRelationshipID(left)
+  const rightID = getRelationshipID(right)
+
+  return leftID !== null && rightID !== null && String(leftID) === String(rightID)
 }
 
 export const assertInteractionContactsBelongToOrganization: CollectionBeforeChangeHook = async ({
@@ -55,7 +66,7 @@ export const assertInteractionContactsBelongToOrganization: CollectionBeforeChan
         req,
       })
 
-      if (getRelationshipID(contact.organization as RelationshipValue) !== organizationID) {
+      if (!sameRelationshipID(contact.organization as RelationshipValue, organizationID)) {
         invalidContactIDs.push(contactID)
       }
     } catch {
@@ -89,8 +100,9 @@ export const maintainInteractionAuthor: CollectionBeforeChangeHook = ({ data, op
     return data
   }
 
-  if (originalDoc?.createdBy !== undefined) {
-    data.createdBy = originalDoc.createdBy
+  const originalAuthorID = getRelationshipID(originalDoc?.createdBy as RelationshipValue)
+  if (originalAuthorID !== null) {
+    data.createdBy = originalAuthorID
   }
 
   return data
