@@ -8,7 +8,9 @@ import { fileURLToPath } from 'url'
 
 import { isPlatformAdmin } from './access/organizations'
 import { Contacts } from './collections/Contacts'
+import { ContactCustomFieldValues } from './collections/ContactCustomFieldValues'
 import { ContactTags } from './collections/ContactTags'
+import { CustomFieldDefinitions } from './collections/CustomFieldDefinitions'
 import { EventRegistrations } from './collections/EventRegistrations'
 import { Events } from './collections/Events'
 import { Interactions } from './collections/Interactions'
@@ -49,10 +51,12 @@ export default buildConfig({
     Organizations,
     Users,
     ContactTags,
+    CustomFieldDefinitions,
     PrivacyPurposes,
     MembershipTypes,
     PartnershipLevels,
     Contacts,
+    ContactCustomFieldValues,
     Memberships,
     Events,
     EventRegistrations,
@@ -95,6 +99,8 @@ export default buildConfig({
     multiTenantPlugin({
       collections: {
         'contact-tags': {},
+        'custom-field-definitions': {},
+        'contact-custom-field-values': {},
         'privacy-purposes': {},
         'privacy-records': {},
         'membership-types': {},
