@@ -18,6 +18,7 @@ import * as migration_20260907_181843_crm_notes from './20260907_181843_crm_note
 import * as migration_20260907_193056_crm_custom_fields from './20260907_193056_crm_custom_fields';
 import * as migration_20260907_201705_forms_submissions from './20260907_201705_forms_submissions';
 import * as migration_20260907_212207_association_documents from './20260907_212207_association_documents';
+import * as migration_20260907_212232_association_documents from './20260907_212232_association_documents';
 
 export const migrations = [
   {
@@ -118,6 +119,11 @@ export const migrations = [
   {
     up: migration_20260907_212207_association_documents.up,
     down: migration_20260907_212207_association_documents.down,
-    name: '20260907_212207_association_documents'
+    name: '20260907_212207_association_documents',
+  },
+  {
+    up: migration_20260907_212232_association_documents.up,
+    down: migration_20260907_212232_association_documents.down,
+    name: '20260907_212232_association_documents'
   },
 ];
