@@ -6,6 +6,7 @@ import * as migration_20260906_223611_page_sections from './20260906_223611_page
 import * as migration_20260906_225243_builtin_routes from './20260906_225243_builtin_routes';
 import * as migration_20260907_063504_site_sync_job from './20260907_063504_site_sync_job';
 import * as migration_20260907_065526_contact_core from './20260907_065526_contact_core';
+import * as migration_20260907_070732_crm_interactions from './20260907_070732_crm_interactions';
 
 export const migrations = [
   {
@@ -46,6 +47,11 @@ export const migrations = [
   {
     up: migration_20260907_065526_contact_core.up,
     down: migration_20260907_065526_contact_core.down,
-    name: '20260907_065526_contact_core'
+    name: '20260907_065526_contact_core',
+  },
+  {
+    up: migration_20260907_070732_crm_interactions.up,
+    down: migration_20260907_070732_crm_interactions.down,
+    name: '20260907_070732_crm_interactions'
   },
 ];
