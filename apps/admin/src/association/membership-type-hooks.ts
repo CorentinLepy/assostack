@@ -1,7 +1,7 @@
 import type { CollectionBeforeChangeHook, CollectionBeforeValidateHook, PayloadRequest } from 'payload'
 import { ValidationError } from 'payload'
 
-import { getRelationshipID, type RelationshipID } from '../access/organizations'
+import { getRelationshipID } from '../access/organizations'
 
 type DocumentLike = Record<string, any>
 
