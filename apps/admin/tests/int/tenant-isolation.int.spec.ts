@@ -189,15 +189,15 @@ describe('tenant isolation', () => {
     ).rejects.toThrow()
   })
 
-  test('keeps member role read-only', async () => {
-    const result = await payload.find({
-      collection: 'contacts',
-      overrideAccess: false,
-      user: asRequestUser(memberA) as any,
-      limit: 20,
-    })
-
-    expect(result.docs.map((doc) => doc.id)).toContain(contactA.id)
+  test('keeps CRM contact PII unavailable to ordinary members', async () => {
+    await expect(
+      payload.find({
+        collection: 'contacts',
+        overrideAccess: false,
+        user: asRequestUser(memberA) as any,
+        limit: 20,
+      }),
+    ).rejects.toThrow()
 
     await expect(
       payload.update({

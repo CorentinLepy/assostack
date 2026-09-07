@@ -2,7 +2,7 @@
 
 This roadmap is intentionally pragmatic. Team SMH is the first production implementation used to validate the product, but milestones are defined for a reusable platform.
 
-## 0.1 Foundation
+## 0.1 Foundation — complete
 
 Goal: establish a reliable development and deployment base.
 
@@ -22,28 +22,30 @@ Goal: establish a reliable development and deployment base.
 
 Exit criteria: a developer can clone the repository, start the platform locally, sign in, and operate within a tenant-aware environment.
 
-## 0.2 CMS
+## 0.2 CMS — complete
 
 Goal: provide the website/content capabilities needed by real organizations.
 
-- pages
-- news/articles
-- media
-- navigation
-- SEO fields
-- theme configuration
-- draft/publish workflow
-- public Astro rendering from backend content
-- forms foundation
+- tenant-scoped pages, news/articles and media
+- draft/version/publish workflow and scheduled publication
+- structured reusable page sections
+- organization navigation and constrained theme configuration
+- provider-neutral built-in public routes
+- stable public content API that exposes published content only
+- static Astro rendering from backend content
+- transaction-safe static-site rebuild queue/webhook boundary
+- SEO fields, canonical/social metadata
+- `robots.txt`, XML sitemap and RSS news feed
+- configured static-build tests that guard the public/backend boundary
 
 Exit criteria: an organization can publish and maintain a usable public website without modifying product code.
 
-## 0.3 CRM
+## 0.3 CRM — in progress
 
 Goal: establish the reusable relationship-management core.
 
-- contacts
-- organizations/companies
+- contacts (people and organizations)
+- organization/company relationships without duplicating CRM identities
 - tags/segments
 - activities/interactions
 - notes
@@ -64,6 +66,7 @@ Goal: cover common association workflows through reusable modules.
 - events
 - registrations/participation
 - sponsors/partners
+- forms and submissions
 - documents
 
 Exit criteria: Team SMH can operate its core association workflows on AssoStack without Team SMH-specific logic in the product core.
