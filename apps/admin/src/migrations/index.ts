@@ -9,6 +9,7 @@ import * as migration_20260907_065526_contact_core from './20260907_065526_conta
 import * as migration_20260907_070732_crm_interactions from './20260907_070732_crm_interactions';
 import * as migration_20260907_072333_crm_tasks from './20260907_072333_crm_tasks';
 import * as migration_20260907_073402_crm_contact_tags from './20260907_073402_crm_contact_tags';
+import * as migration_20260907_132550_crm_privacy from './20260907_132550_crm_privacy';
 
 export const migrations = [
   {
@@ -64,6 +65,11 @@ export const migrations = [
   {
     up: migration_20260907_073402_crm_contact_tags.up,
     down: migration_20260907_073402_crm_contact_tags.down,
-    name: '20260907_073402_crm_contact_tags'
+    name: '20260907_073402_crm_contact_tags',
+  },
+  {
+    up: migration_20260907_132550_crm_privacy.up,
+    down: migration_20260907_132550_crm_privacy.down,
+    name: '20260907_132550_crm_privacy'
   },
 ];
