@@ -286,6 +286,9 @@ try {
     path.join(webRoot, 'dist', 'news', 'first-demo-news', 'index.html'),
     'utf8',
   )
+  const robots = await readFile(path.join(webRoot, 'dist', 'robots.txt'), 'utf8')
+  const sitemap = await readFile(path.join(webRoot, 'dist', 'sitemap.xml'), 'utf8')
+  const rss = await readFile(path.join(webRoot, 'dist', 'news', 'rss.xml'), 'utf8')
 
   if (!homeHTML.includes('A homepage assembled from reusable sections')) {
     throw new Error('Configured build did not render the structured home hero.')
@@ -357,7 +360,62 @@ try {
     throw new Error('Configured build did not apply the public radius token.')
   }
 
-  console.log('Configured organization build rendered pages, page sections, news routes and site settings successfully.')
+  if (!homeHTML.includes('rel="canonical" href="https://demo.test/"')) {
+    throw new Error('Configured build did not emit the homepage canonical URL.')
+  }
+
+  if (!aboutHTML.includes('rel="canonical" href="https://demo.test/about"')) {
+    throw new Error('Configured build did not emit the page canonical URL.')
+  }
+
+  if (!newsHTML.includes('rel="canonical" href="https://demo.test/news"')) {
+    throw new Error('Configured build did not emit the news index canonical URL.')
+  }
+
+  if (!articleHTML.includes('rel="canonical" href="https://demo.test/news/first-demo-news"')) {
+    throw new Error('Configured build did not emit the article canonical URL.')
+  }
+
+  if (!articleHTML.includes('property="og:type" content="article"')) {
+    throw new Error('Configured build did not emit article Open Graph metadata.')
+  }
+
+  if (!articleHTML.includes('property="article:published_time" content="2026-09-06T18:30:00.000Z"')) {
+    throw new Error('Configured build did not emit the article publication timestamp.')
+  }
+
+  if (!robots.includes('Sitemap: https://demo.test/sitemap.xml')) {
+    throw new Error('Configured build did not advertise the canonical sitemap in robots.txt.')
+  }
+
+  for (const publicURL of [
+    'https://demo.test/',
+    'https://demo.test/about',
+    'https://demo.test/news',
+    'https://demo.test/news/first-demo-news',
+  ]) {
+    if (!sitemap.includes(publicURL)) {
+      throw new Error(`Configured sitemap is missing ${publicURL}.`)
+    }
+  }
+
+  if (sitemap.includes('/api/public/') || sitemap.includes('127.0.0.1')) {
+    throw new Error('Configured sitemap leaked an internal public-content API URL.')
+  }
+
+  if (!rss.includes('<title>First demo news</title>')) {
+    throw new Error('Configured RSS feed did not include the public news article.')
+  }
+
+  if (!rss.includes('https://demo.test/news/first-demo-news')) {
+    throw new Error('Configured RSS feed did not use the canonical public article URL.')
+  }
+
+  if (rss.includes('/api/public/') || rss.includes('127.0.0.1')) {
+    throw new Error('Configured RSS feed leaked an internal public-content API URL.')
+  }
+
+  console.log('Configured organization build rendered pages, news, canonical metadata, sitemap, robots and RSS successfully.')
 } finally {
   await new Promise((resolve, reject) =>
     server.close((error) => (error ? reject(error) : resolve())),
