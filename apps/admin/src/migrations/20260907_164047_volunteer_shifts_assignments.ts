@@ -20,7 +20,9 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"external_reference" varchar,
   	"created_by_id" integer,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+  	CONSTRAINT "volunteer_shifts_date_order_check" CHECK ("ends_at" > "starts_at"),
+  	CONSTRAINT "volunteer_shifts_capacity_positive_integer_check" CHECK ("capacity" IS NULL OR ("capacity" >= 1 AND "capacity" = trunc("capacity")))
   );
   
   CREATE TABLE "volunteer_assignments" (
@@ -50,6 +52,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "volunteer_shifts_event_idx" ON "volunteer_shifts" USING btree ("event_id");
   CREATE INDEX "volunteer_shifts_name_idx" ON "volunteer_shifts" USING btree ("name");
   CREATE INDEX "volunteer_shifts_key_idx" ON "volunteer_shifts" USING btree ("key");
+  CREATE UNIQUE INDEX "volunteer_shifts_organization_event_key_unique" ON "volunteer_shifts" USING btree ("organization_id", "event_id", "key");
   CREATE INDEX "volunteer_shifts_status_idx" ON "volunteer_shifts" USING btree ("status");
   CREATE INDEX "volunteer_shifts_starts_at_idx" ON "volunteer_shifts" USING btree ("starts_at");
   CREATE INDEX "volunteer_shifts_ends_at_idx" ON "volunteer_shifts" USING btree ("ends_at");
@@ -61,6 +64,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "volunteer_assignments_organization_idx" ON "volunteer_assignments" USING btree ("organization_id");
   CREATE INDEX "volunteer_assignments_shift_idx" ON "volunteer_assignments" USING btree ("shift_id");
   CREATE INDEX "volunteer_assignments_contact_idx" ON "volunteer_assignments" USING btree ("contact_id");
+  CREATE UNIQUE INDEX "volunteer_assignments_organization_shift_contact_unique" ON "volunteer_assignments" USING btree ("organization_id", "shift_id", "contact_id");
   CREATE INDEX "volunteer_assignments_status_idx" ON "volunteer_assignments" USING btree ("status");
   CREATE INDEX "volunteer_assignments_source_idx" ON "volunteer_assignments" USING btree ("source");
   CREATE INDEX "volunteer_assignments_external_reference_idx" ON "volunteer_assignments" USING btree ("external_reference");
@@ -75,18 +79,16 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "volunteer_shifts" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "volunteer_assignments" DISABLE ROW LEVEL SECURITY;
-  DROP TABLE "volunteer_shifts" CASCADE;
-  DROP TABLE "volunteer_assignments" CASCADE;
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_volunteer_shifts_fk";
-  
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_volunteer_assignments_fk";
-  
   DROP INDEX "payload_locked_documents_rels_volunteer_shifts_id_idx";
   DROP INDEX "payload_locked_documents_rels_volunteer_assignments_id_idx";
   ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "volunteer_shifts_id";
   ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "volunteer_assignments_id";
+  ALTER TABLE "volunteer_assignments" DISABLE ROW LEVEL SECURITY;
+  ALTER TABLE "volunteer_shifts" DISABLE ROW LEVEL SECURITY;
+  DROP TABLE "volunteer_assignments" CASCADE;
+  DROP TABLE "volunteer_shifts" CASCADE;
   DROP TYPE "public"."enum_volunteer_shifts_status";
   DROP TYPE "public"."enum_volunteer_assignments_status";
   DROP TYPE "public"."enum_volunteer_assignments_source";`)
