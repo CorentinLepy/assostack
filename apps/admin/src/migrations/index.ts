@@ -8,6 +8,7 @@ import * as migration_20260907_063504_site_sync_job from './20260907_063504_site
 import * as migration_20260907_065526_contact_core from './20260907_065526_contact_core';
 import * as migration_20260907_070732_crm_interactions from './20260907_070732_crm_interactions';
 import * as migration_20260907_072333_crm_tasks from './20260907_072333_crm_tasks';
+import * as migration_20260907_073402_crm_contact_tags from './20260907_073402_crm_contact_tags';
 
 export const migrations = [
   {
@@ -58,6 +59,11 @@ export const migrations = [
   {
     up: migration_20260907_072333_crm_tasks.up,
     down: migration_20260907_072333_crm_tasks.down,
-    name: '20260907_072333_crm_tasks'
+    name: '20260907_072333_crm_tasks',
+  },
+  {
+    up: migration_20260907_073402_crm_contact_tags.up,
+    down: migration_20260907_073402_crm_contact_tags.down,
+    name: '20260907_073402_crm_contact_tags'
   },
 ];
