@@ -22,6 +22,8 @@ describe('CRM tasks', () => {
   let platformAdmin: any
   let contactA: any
   let contactB: any
+  let interactionA: any
+  let interactionB: any
 
   beforeAll(async () => {
     payload = await getPayload({ config })
@@ -128,21 +130,47 @@ describe('CRM tasks', () => {
         organization: organizationB.id,
       } as any,
     })
+
+    interactionA = await payload.create({
+      collection: 'interactions',
+      overrideAccess: false,
+      user: asRequestUser(adminA) as any,
+      data: {
+        kind: 'meeting',
+        subject: 'Alpha task source meeting',
+        contacts: [contactA.id],
+        organization: organizationA.id,
+      } as any,
+    })
+
+    interactionB = await payload.create({
+      collection: 'interactions',
+      overrideAccess: false,
+      user: asRequestUser(adminB) as any,
+      data: {
+        kind: 'phone-call',
+        subject: 'Beta task source call',
+        contacts: [contactB.id],
+        organization: organizationB.id,
+      } as any,
+    })
   })
 
   afterAll(async () => {
     await payload.destroy()
   })
 
-  test('creates an open follow-up linked to a same-tenant contact and staff assignee', async () => {
+  test('creates an open follow-up with reminder, context and same-tenant staff assignment', async () => {
     const task = await payload.create({
       collection: 'tasks',
       overrideAccess: false,
       user: asRequestUser(adminA) as any,
       data: {
         title: 'Call the Alpha contact back',
+        remindAt: '2026-09-08T08:00:00.000Z',
         dueAt: '2026-09-08T09:00:00.000Z',
         contacts: [contactA.id],
+        relatedInteraction: interactionA.id,
         assignee: adminA.id,
         organization: organizationA.id,
       } as any,
@@ -150,13 +178,31 @@ describe('CRM tasks', () => {
 
     expect(task.status).toBe('open')
     expect(task.priority).toBe('normal')
+    expect(task.remindAt).toBe('2026-09-08T08:00:00.000Z')
     expect(task.completedAt).toBeNull()
     expect(relationshipID(task.createdBy)).toBe(adminA.id)
     expect(relationshipID(task.assignee)).toBe(adminA.id)
+    expect(relationshipID(task.relatedInteraction)).toBe(interactionA.id)
     expect((task.contacts ?? []).map(relationshipID)).toContain(contactA.id)
   })
 
-  test('maintains completion metadata when a task is completed and reopened', async () => {
+  test('rejects reminder metadata scheduled after the task due date', async () => {
+    await expect(
+      payload.create({
+        collection: 'tasks',
+        overrideAccess: false,
+        user: asRequestUser(adminA) as any,
+        data: {
+          title: 'Invalid reminder window',
+          dueAt: '2026-09-08T09:00:00.000Z',
+          remindAt: '2026-09-08T10:00:00.000Z',
+          organization: organizationA.id,
+        } as any,
+      }),
+    ).rejects.toThrow(/reminder/i)
+  })
+
+  test('maintains immutable completion and creator attribution, then clears completion on reopen', async () => {
     const task = await payload.create({
       collection: 'tasks',
       overrideAccess: false,
@@ -182,6 +228,24 @@ describe('CRM tasks', () => {
     expect(completed.completedAt).toEqual(expect.any(String))
     expect(relationshipID(completed.completedBy)).toBe(adminA.id)
     expect(relationshipID(completed.createdBy)).toBe(adminA.id)
+
+    const originalCompletedAt = completed.completedAt
+    const stillCompleted = await payload.update({
+      collection: 'tasks',
+      id: task.id,
+      overrideAccess: false,
+      user: asRequestUser(adminA) as any,
+      data: {
+        title: 'Prepare and review follow-up email',
+        createdBy: adminB.id,
+        completedBy: adminB.id,
+        completedAt: '2030-01-01T00:00:00.000Z',
+      } as any,
+    })
+
+    expect(stillCompleted.completedAt).toBe(originalCompletedAt)
+    expect(relationshipID(stillCompleted.completedBy)).toBe(adminA.id)
+    expect(relationshipID(stillCompleted.createdBy)).toBe(adminA.id)
 
     const reopened = await payload.update({
       collection: 'tasks',
@@ -212,6 +276,21 @@ describe('CRM tasks', () => {
         } as any,
       }),
     ).rejects.toThrow()
+  })
+
+  test('rejects a related Interaction from another tenant', async () => {
+    await expect(
+      payload.create({
+        collection: 'tasks',
+        overrideAccess: false,
+        user: asRequestUser(adminA) as any,
+        data: {
+          title: 'Forbidden interaction context',
+          relatedInteraction: interactionB.id,
+          organization: organizationA.id,
+        } as any,
+      }),
+    ).rejects.toThrow(/Interaction/i)
   })
 
   test('rejects a staff assignee from another organization', async () => {
