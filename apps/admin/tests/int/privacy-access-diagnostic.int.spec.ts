@@ -18,6 +18,7 @@ describe('Privacy tenant access diagnostics', () => {
   let organizationA: any
   let organizationB: any
   let adminA: any
+  let adminB: any
   let purposeA: any
   let purposeB: any
 
@@ -46,10 +47,22 @@ describe('Privacy tenant access diagnostics', () => {
         organizations: [{ organization: organizationA.id, roles: ['organization-admin'] }],
       } as any,
     })
+    adminB = await payload.create({
+      collection: 'users',
+      overrideAccess: true,
+      data: {
+        email: 'privacy-diagnostic-admin-b@assostack.test',
+        password: 'test-password-123',
+        name: 'Privacy Diagnostic Admin B',
+        platformRoles: ['user'],
+        organizations: [{ organization: organizationB.id, roles: ['organization-admin'] }],
+      } as any,
+    })
 
     purposeA = await payload.create({
       collection: 'privacy-purposes',
-      overrideAccess: true,
+      overrideAccess: false,
+      user: asRequestUser(adminA) as any,
       data: {
         organization: organizationA.id,
         name: 'Diagnostic purpose A',
@@ -58,7 +71,8 @@ describe('Privacy tenant access diagnostics', () => {
     })
     purposeB = await payload.create({
       collection: 'privacy-purposes',
-      overrideAccess: true,
+      overrideAccess: false,
+      user: asRequestUser(adminB) as any,
       data: {
         organization: organizationB.id,
         name: 'Diagnostic purpose B',
