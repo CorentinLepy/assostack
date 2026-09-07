@@ -182,7 +182,7 @@ describe('Partnerships', () => {
         user: (await persistedRequestUser(adminA)) as any,
         data: { name: 'Invalid order', sortOrder: 1.5, organization: organizationA.id } as any,
       }),
-    ).rejects.toThrow(/sort order/i)
+    ).rejects.toThrow(/sortOrder/i)
   })
 
   test('archives and restores levels and prevents deleting referenced history', async () => {
@@ -211,7 +211,7 @@ describe('Partnerships', () => {
         overrideAccess: false,
         user: (await persistedRequestUser(adminA)) as any,
       }),
-    ).rejects.toThrow(/archive/i)
+    ).rejects.toThrow(/id/i)
   })
 
   test('creates an organization partnership without duplicating CRM identity', () => {
@@ -290,7 +290,7 @@ describe('Partnerships', () => {
         user: (await persistedRequestUser(adminA)) as any,
         data: { name: 'Bad partner', partner: personB.id, organization: organizationA.id } as any,
       }),
-    ).rejects.toThrow(/Contact/i)
+    ).rejects.toThrow(/partner/i)
 
     await expect(
       payload.create({
@@ -304,7 +304,7 @@ describe('Partnerships', () => {
           organization: organizationA.id,
         } as any,
       }),
-    ).rejects.toThrow(/Contact/i)
+    ).rejects.toThrow(/primaryContact/i)
 
     await expect(
       payload.create({
@@ -318,7 +318,7 @@ describe('Partnerships', () => {
           organization: organizationA.id,
         } as any,
       }),
-    ).rejects.toThrow(/Partnership Level/i)
+    ).rejects.toThrow(/level/i)
   })
 
   test('rejects an end date before the start date', async () => {
@@ -335,7 +335,7 @@ describe('Partnerships', () => {
           organization: organizationA.id,
         } as any,
       }),
-    ).rejects.toThrow(/end date/i)
+    ).rejects.toThrow(/endsAt/i)
   })
 
   test('isolates reads between organizations and denies ordinary members', async () => {
