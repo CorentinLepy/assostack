@@ -22,6 +22,8 @@ import { PrivacyPurposes } from './collections/PrivacyPurposes'
 import { PrivacyRecords } from './collections/PrivacyRecords'
 import { Tasks } from './collections/Tasks'
 import { Users } from './collections/Users'
+import { VolunteerAssignments } from './collections/VolunteerAssignments'
+import { VolunteerShifts } from './collections/VolunteerShifts'
 import { publicContentEndpoints } from './public-api/endpoints'
 import { SITE_SYNC_QUEUE, siteSyncTask } from './site-rebuild/task'
 
@@ -50,6 +52,8 @@ export default buildConfig({
     Memberships,
     Events,
     EventRegistrations,
+    VolunteerShifts,
+    VolunteerAssignments,
     Interactions,
     Tasks,
     PrivacyRecords,
@@ -89,6 +93,8 @@ export default buildConfig({
         'privacy-records': {},
         'membership-types': {},
         'event-registrations': {},
+        'volunteer-shifts': {},
+        'volunteer-assignments': {},
         memberships: {},
         events: {},
         contacts: {},
