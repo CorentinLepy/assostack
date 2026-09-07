@@ -15,6 +15,7 @@ import { Interactions } from './collections/Interactions'
 import { Memberships } from './collections/Memberships'
 import { MembershipTypes } from './collections/MembershipTypes'
 import { Media } from './collections/Media'
+import { Notes } from './collections/Notes'
 import { Organizations } from './collections/Organizations'
 import { Pages } from './collections/Pages'
 import { PartnershipLevels } from './collections/PartnershipLevels'
@@ -59,6 +60,7 @@ export default buildConfig({
     VolunteerAssignments,
     Partnerships,
     Interactions,
+    Notes,
     Tasks,
     PrivacyRecords,
     Media,
@@ -105,6 +107,7 @@ export default buildConfig({
         partnerships: {},
         contacts: {},
         interactions: {},
+        notes: {},
         tasks: {},
         media: {},
         pages: {},
