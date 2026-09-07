@@ -14,11 +14,15 @@ import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { publicContentEndpoints } from './public-api/endpoints'
+import { SITE_SYNC_QUEUE, siteSyncTask } from './site-rebuild/task'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const publicWebURL = process.env.PUBLIC_WEB_URL ?? 'http://localhost:4321'
 const shouldPushSchema = process.env.NODE_ENV === 'development' && process.env.PAYLOAD_DB_PUSH !== 'false'
+const shouldAutoRunJobs =
+  process.env.ASSOSTACK_JOBS_AUTORUN === 'true' ||
+  (process.env.NODE_ENV === 'production' && process.env.ASSOSTACK_JOBS_AUTORUN !== 'false')
 
 export default buildConfig({
   admin: {
@@ -39,6 +43,18 @@ export default buildConfig({
   }),
   editor: lexicalEditor(),
   endpoints: publicContentEndpoints,
+  jobs: {
+    tasks: [siteSyncTask],
+    autoRun: shouldAutoRunJobs
+      ? [
+          {
+            cron: '*/5 * * * * *',
+            queue: SITE_SYNC_QUEUE,
+            limit: 10,
+          },
+        ]
+      : [],
+  },
   plugins: [
     multiTenantPlugin({
       collections: {
