@@ -77,6 +77,15 @@ describe('CRM privacy purposes and history', () => {
       } as any,
     })
 
+    adminA = await payload.update({
+      collection: 'users',
+      id: adminA.id,
+      overrideAccess: true,
+      data: {
+        platformRoles: ['user'],
+      },
+    })
+
     adminB = await payload.create({
       collection: 'users',
       overrideAccess: true,
@@ -209,6 +218,9 @@ describe('CRM privacy purposes and history', () => {
     expect(purposeB.key).toBe('newsletter-general')
     expect(purposeA.status).toBe('active')
     expect(purposeA.legalBasis).toBe('consent')
+
+    const persistedAdminA = await persistedRequestUser(payload, adminA)
+    expect((persistedAdminA as any).platformRoles).toEqual(['user'])
     expect(relationshipID(purposeA.organization)).toBe(organizationA.id)
     expect(relationshipID(purposeB.organization)).toBe(organizationB.id)
   })
@@ -361,18 +373,6 @@ describe('CRM privacy purposes and history', () => {
   })
 
   test('keeps Privacy Purpose and Record reads isolated between organizations', async () => {
-    const debugUserA = await persistedRequestUser(payload, adminA)
-    const debugAccessResult = await payload.collections['privacy-purposes'].config.access.read?.({
-      req: { user: debugUserA },
-    } as any)
-    console.log('PRIVACY_DEBUG_USER', JSON.stringify({
-      id: debugUserA.id,
-      collection: debugUserA.collection,
-      platformRoles: (debugUserA as any).platformRoles,
-      organizations: (debugUserA as any).organizations,
-    }))
-    console.log('PRIVACY_DEBUG_ACCESS', JSON.stringify(debugAccessResult))
-
     const purposesA = await payload.find({
       collection: 'privacy-purposes',
       overrideAccess: false,
