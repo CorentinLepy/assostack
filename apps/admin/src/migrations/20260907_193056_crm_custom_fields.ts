@@ -62,6 +62,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "custom_field_definitions_organization_idx" ON "custom_field_definitions" USING btree ("organization_id");
   CREATE INDEX "custom_field_definitions_label_idx" ON "custom_field_definitions" USING btree ("label");
   CREATE INDEX "custom_field_definitions_key_idx" ON "custom_field_definitions" USING btree ("key");
+  CREATE UNIQUE INDEX "custom_field_definitions_organization_key_unique" ON "custom_field_definitions" USING btree ("organization_id", "key");
   CREATE INDEX "custom_field_definitions_type_idx" ON "custom_field_definitions" USING btree ("type");
   CREATE INDEX "custom_field_definitions_sort_order_idx" ON "custom_field_definitions" USING btree ("sort_order");
   CREATE INDEX "custom_field_definitions_status_idx" ON "custom_field_definitions" USING btree ("status");
@@ -71,6 +72,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "contact_custom_field_values_organization_idx" ON "contact_custom_field_values" USING btree ("organization_id");
   CREATE INDEX "contact_custom_field_values_contact_idx" ON "contact_custom_field_values" USING btree ("contact_id");
   CREATE INDEX "contact_custom_field_values_field_idx" ON "contact_custom_field_values" USING btree ("field_id");
+  CREATE UNIQUE INDEX "contact_custom_field_values_contact_field_unique" ON "contact_custom_field_values" USING btree ("contact_id", "field_id");
   CREATE INDEX "contact_custom_field_values_single_select_value_idx" ON "contact_custom_field_values" USING btree ("single_select_value");
   CREATE INDEX "contact_custom_field_values_updated_at_idx" ON "contact_custom_field_values" USING btree ("updated_at");
   CREATE INDEX "contact_custom_field_values_created_at_idx" ON "contact_custom_field_values" USING btree ("created_at");
@@ -83,22 +85,16 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "custom_field_definitions_options" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "custom_field_definitions" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "contact_custom_field_values" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "contact_custom_field_values_texts" DISABLE ROW LEVEL SECURITY;
-  DROP TABLE "custom_field_definitions_options" CASCADE;
-  DROP TABLE "custom_field_definitions" CASCADE;
-  DROP TABLE "contact_custom_field_values" CASCADE;
-  DROP TABLE "contact_custom_field_values_texts" CASCADE;
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_custom_field_definitions_fk";
-  
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_contact_custom_field_values_fk";
-  
   DROP INDEX "payload_locked_documents_rels_custom_field_definitions_i_idx";
   DROP INDEX "payload_locked_documents_rels_contact_custom_field_value_idx";
   ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "custom_field_definitions_id";
   ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "contact_custom_field_values_id";
+  DROP TABLE "custom_field_definitions_options" CASCADE;
+  DROP TABLE "contact_custom_field_values_texts" CASCADE;
+  DROP TABLE "contact_custom_field_values" CASCADE;
+  DROP TABLE "custom_field_definitions" CASCADE;
   DROP TYPE "public"."enum_custom_field_definitions_type";
   DROP TYPE "public"."enum_custom_field_definitions_status";`)
 }
