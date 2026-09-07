@@ -3,6 +3,7 @@ import type { PayloadRequest } from 'payload'
 export type SiteSyncAction = 'disable' | 'rebuild'
 
 export type SiteSyncReason =
+  | 'organization.created'
   | 'organization.deleted'
   | 'organization.disabled'
   | 'organization.slug-changed'
