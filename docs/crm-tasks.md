@@ -5,7 +5,7 @@ AssoStack separates **history** from **follow-up**:
 - an Interaction records something that happened;
 - a Task records something staff still need to do.
 
-Tasks are tenant-scoped CRM records. They can optionally reference Contacts and a staff assignee, but they do not replace membership, event, volunteer or project-specific workflow records.
+Tasks are tenant-scoped CRM records. They can optionally reference Contacts, the Interaction that created the follow-up, and a staff assignee, but they do not replace membership, event, volunteer or project-specific workflow records.
 
 ## Task lifecycle
 
@@ -23,15 +23,25 @@ Priorities are:
 - `high`
 - `urgent`
 
-A Task has a required title and may also contain staff-only rich-text details, a due date, related Contacts, an assignee and an external/import reference.
+A Task has a required title and may also contain staff-only rich-text details, a due date, reminder metadata, related Contacts, a related Interaction, an assignee and an external/import reference.
 
-When a Task moves to `completed`, AssoStack manages `completedAt` and `completedBy`. Reopening or cancelling a completed Task clears those completion fields. `createdBy` is also managed by the authenticated request and cannot be rewritten by clients.
+When a Task moves to `completed`, AssoStack manages `completedAt` and `completedBy`. Updating an already completed Task preserves the original completion timestamp and staff attribution. Reopening or cancelling a completed Task clears those completion fields. `createdBy` is managed by the authenticated request and remains immutable.
 
-## Contact relationships
+## Reminder metadata
 
-Tasks may be standalone or linked to one or more Contacts.
+`remindAt` is an optional date/time indicating when a future notification or automation adapter should surface the Task.
 
-Every supplied Contact ID is validated server-side against the Task organization. UI filtering is not considered a security boundary: a crafted request containing a Contact from another tenant is rejected.
+The CRM core does **not** send email, push notifications or calendar reminders itself. It stores provider-neutral reminder intent so later adapters can consume it without changing the Task schema.
+
+When both `remindAt` and `dueAt` are set, the reminder must occur at or before the due date. This rule is enforced server-side, including partial updates where only one of the two timestamps changes.
+
+## Contact and Interaction relationships
+
+Tasks may be standalone, linked to one or more Contacts, linked to a source/context Interaction, or both.
+
+Every supplied Contact ID is validated server-side against the Task organization. A related Interaction is validated the same way. UI filtering is not considered a security boundary: a crafted request containing a Contact or Interaction from another tenant is rejected.
+
+This allows a common workflow such as “meeting happened” -> Interaction -> “send sponsorship proposal next Tuesday” -> Task while keeping history and future work as separate records.
 
 ## Staff assignment
 
@@ -66,4 +76,4 @@ This generic model can later support:
 - task dashboards and overdue views;
 - association-specific modules that reference or create CRM follow-ups.
 
-Recurring rules and provider-specific notification logic remain outside the CRM task core.
+Recurring rules, escalation/SLA logic and provider-specific notification delivery remain outside the CRM task core.
