@@ -17,6 +17,8 @@ import { MembershipTypes } from './collections/MembershipTypes'
 import { Media } from './collections/Media'
 import { Organizations } from './collections/Organizations'
 import { Pages } from './collections/Pages'
+import { PartnershipLevels } from './collections/PartnershipLevels'
+import { Partnerships } from './collections/Partnerships'
 import { Posts } from './collections/Posts'
 import { PrivacyPurposes } from './collections/PrivacyPurposes'
 import { PrivacyRecords } from './collections/PrivacyRecords'
@@ -48,12 +50,14 @@ export default buildConfig({
     ContactTags,
     PrivacyPurposes,
     MembershipTypes,
+    PartnershipLevels,
     Contacts,
     Memberships,
     Events,
     EventRegistrations,
     VolunteerShifts,
     VolunteerAssignments,
+    Partnerships,
     Interactions,
     Tasks,
     PrivacyRecords,
@@ -95,8 +99,10 @@ export default buildConfig({
         'event-registrations': {},
         'volunteer-shifts': {},
         'volunteer-assignments': {},
+        'partnership-levels': {},
         memberships: {},
         events: {},
+        partnerships: {},
         contacts: {},
         interactions: {},
         tasks: {},
