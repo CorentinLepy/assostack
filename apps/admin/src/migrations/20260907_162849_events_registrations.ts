@@ -26,7 +26,9 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"external_reference" varchar,
   	"created_by_id" integer,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+  	CONSTRAINT "events_date_order_check" CHECK ("ends_at" IS NULL OR "ends_at" >= "starts_at"),
+  	CONSTRAINT "events_capacity_positive_integer_check" CHECK ("capacity" IS NULL OR ("capacity" >= 1 AND "capacity" = trunc("capacity")))
   );
   
   CREATE TABLE "event_registrations" (
@@ -54,6 +56,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "events_organization_idx" ON "events" USING btree ("organization_id");
   CREATE INDEX "events_title_idx" ON "events" USING btree ("title");
   CREATE INDEX "events_key_idx" ON "events" USING btree ("key");
+  CREATE UNIQUE INDEX "events_organization_key_unique" ON "events" USING btree ("organization_id", "key");
   CREATE INDEX "events_status_idx" ON "events" USING btree ("status");
   CREATE INDEX "events_starts_at_idx" ON "events" USING btree ("starts_at");
   CREATE INDEX "events_ends_at_idx" ON "events" USING btree ("ends_at");
@@ -66,6 +69,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "event_registrations_organization_idx" ON "event_registrations" USING btree ("organization_id");
   CREATE INDEX "event_registrations_event_idx" ON "event_registrations" USING btree ("event_id");
   CREATE INDEX "event_registrations_contact_idx" ON "event_registrations" USING btree ("contact_id");
+  CREATE UNIQUE INDEX "event_registrations_organization_event_contact_unique" ON "event_registrations" USING btree ("organization_id", "event_id", "contact_id");
   CREATE INDEX "event_registrations_status_idx" ON "event_registrations" USING btree ("status");
   CREATE INDEX "event_registrations_source_idx" ON "event_registrations" USING btree ("source");
   CREATE INDEX "event_registrations_external_reference_idx" ON "event_registrations" USING btree ("external_reference");
@@ -80,18 +84,16 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "events" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "event_registrations" DISABLE ROW LEVEL SECURITY;
-  DROP TABLE "events" CASCADE;
-  DROP TABLE "event_registrations" CASCADE;
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_events_fk";
-  
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_event_registrations_fk";
-  
   DROP INDEX "payload_locked_documents_rels_events_id_idx";
   DROP INDEX "payload_locked_documents_rels_event_registrations_id_idx";
   ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "events_id";
   ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "event_registrations_id";
+  ALTER TABLE "event_registrations" DISABLE ROW LEVEL SECURITY;
+  ALTER TABLE "events" DISABLE ROW LEVEL SECURITY;
+  DROP TABLE "event_registrations" CASCADE;
+  DROP TABLE "events" CASCADE;
   DROP TYPE "public"."enum_events_status";
   DROP TYPE "public"."enum_event_registrations_status";
   DROP TYPE "public"."enum_event_registrations_source";`)
