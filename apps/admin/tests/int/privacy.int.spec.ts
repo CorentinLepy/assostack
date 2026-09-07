@@ -7,7 +7,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 let payload: Payload
 
 const asRequestUser = <T extends Record<string, unknown>>(user: T) => ({
-  ...user,
+  ...structuredClone(user),
   collection: 'users' as const,
 })
 
