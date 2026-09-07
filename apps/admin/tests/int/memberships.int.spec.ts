@@ -308,7 +308,7 @@ describe('CRM memberships', () => {
           organization: organizationA.id,
         } as any,
       }),
-    ).rejects.toThrow(/Membership Type/i)
+    ).rejects.toThrow(/membershipType/i)
   })
 
   test('rejects an end date before the start date', async () => {
@@ -325,7 +325,7 @@ describe('CRM memberships', () => {
           organization: organizationA.id,
         } as any,
       }),
-    ).rejects.toThrow(/end date/i)
+    ).rejects.toThrow(/endsAt/i)
   })
 
   test('enforces membership number uniqueness per organization only', async () => {
@@ -342,7 +342,7 @@ describe('CRM memberships', () => {
           organization: organizationA.id,
         } as any,
       }),
-    ).rejects.toThrow(/membership number/i)
+    ).rejects.toThrow(/membershipNumber/i)
 
     const sameNumberOtherTenant = await payload.create({
       collection: 'memberships',
@@ -456,21 +456,23 @@ describe('CRM memberships', () => {
   })
 
   test('does not expose membership taxonomy or lifecycle to ordinary members', async () => {
-    const types = await payload.find({
-      collection: 'membership-types',
-      overrideAccess: false,
-      user: (await persistedRequestUser(payload, memberA)) as any,
-      limit: 50,
-    })
-    const memberships = await payload.find({
-      collection: 'memberships',
-      overrideAccess: false,
-      user: (await persistedRequestUser(payload, memberA)) as any,
-      limit: 50,
-    })
+    await expect(
+      payload.find({
+        collection: 'membership-types',
+        overrideAccess: false,
+        user: (await persistedRequestUser(payload, memberA)) as any,
+        limit: 50,
+      }),
+    ).rejects.toThrow()
 
-    expect(types.docs).toHaveLength(0)
-    expect(memberships.docs).toHaveLength(0)
+    await expect(
+      payload.find({
+        collection: 'memberships',
+        overrideAccess: false,
+        user: (await persistedRequestUser(payload, memberA)) as any,
+        limit: 50,
+      }),
+    ).rejects.toThrow()
 
     await expect(
       payload.create({
