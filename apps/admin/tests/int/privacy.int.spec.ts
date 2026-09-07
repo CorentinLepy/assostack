@@ -1,3 +1,4 @@
+import { getOrganizationIDsForRoles } from '@/access/organizations'
 import config from '@/payload.config'
 import type { Payload } from 'payload'
 import { getPayload } from 'payload'
@@ -199,6 +200,11 @@ describe('CRM privacy purposes and history', () => {
     expect(purposeB.key).toBe('newsletter-general')
     expect(purposeA.status).toBe('active')
     expect(purposeA.legalBasis).toBe('consent')
+    expect(relationshipID(purposeA.organization)).toBe(organizationA.id)
+    expect(relationshipID(purposeB.organization)).toBe(organizationB.id)
+    expect(getOrganizationIDsForRoles(asRequestUser(adminA), ['organization-admin', 'editor'])).toEqual([
+      organizationA.id,
+    ])
   })
 
   test('rejects duplicate purpose keys inside one organization', async () => {
@@ -349,6 +355,10 @@ describe('CRM privacy purposes and history', () => {
   })
 
   test('keeps Privacy Purpose and Record reads isolated between organizations', async () => {
+    expect(getOrganizationIDsForRoles(asRequestUser(adminA), ['organization-admin', 'editor'])).toEqual([
+      organizationA.id,
+    ])
+
     const purposesA = await payload.find({
       collection: 'privacy-purposes',
       overrideAccess: false,
