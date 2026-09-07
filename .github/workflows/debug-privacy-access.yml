@@ -23,7 +23,7 @@ jobs:
 
           path = Path('apps/admin/tests/int/privacy.int.spec.ts')
           text = path.read_text()
-          marker = """  test('keeps Privacy Purpose and Record reads isolated between organizations', async () => {\n    const purposesA = await payload.find({\n"""
+          marker = """  test('keeps Privacy Purpose and Record reads isolated between organizations', async () => {\n\n    const purposesA = await payload.find({\n"""
           replacement = """  test('keeps Privacy Purpose and Record reads isolated between organizations', async () => {\n    const debugUserA = await persistedRequestUser(payload, adminA)\n    const debugAccessResult = await payload.collections['privacy-purposes'].config.access.read?.({\n      req: { user: debugUserA },\n    } as any)\n    console.log('PRIVACY_DEBUG_USER', JSON.stringify({\n      id: debugUserA.id,\n      collection: debugUserA.collection,\n      platformRoles: (debugUserA as any).platformRoles,\n      organizations: (debugUserA as any).organizations,\n    }))\n    console.log('PRIVACY_DEBUG_ACCESS', JSON.stringify(debugAccessResult))\n\n    const purposesA = await payload.find({\n"""
           if 'PRIVACY_DEBUG_ACCESS' not in text:
               if marker not in text:
