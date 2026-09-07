@@ -213,7 +213,7 @@ describe('CRM privacy purposes and history', () => {
     await payload.destroy()
   })
 
-  test('normalizes purpose keys while allowing the same key in different organizations', () => {
+  test('normalizes purpose keys while allowing the same key in different organizations', async () => {
     expect(purposeA.key).toBe('newsletter-general')
     expect(purposeB.key).toBe('newsletter-general')
     expect(purposeA.status).toBe('active')
