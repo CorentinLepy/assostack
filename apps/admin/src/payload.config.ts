@@ -14,6 +14,8 @@ import { Media } from './collections/Media'
 import { Organizations } from './collections/Organizations'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
+import { PrivacyPurposes } from './collections/PrivacyPurposes'
+import { PrivacyRecords } from './collections/PrivacyRecords'
 import { Tasks } from './collections/Tasks'
 import { Users } from './collections/Users'
 import { publicContentEndpoints } from './public-api/endpoints'
@@ -38,9 +40,11 @@ export default buildConfig({
     Organizations,
     Users,
     ContactTags,
+    PrivacyPurposes,
     Contacts,
     Interactions,
     Tasks,
+    PrivacyRecords,
     Media,
     Pages,
     Posts,
@@ -73,6 +77,8 @@ export default buildConfig({
     multiTenantPlugin({
       collections: {
         'contact-tags': {},
+        'privacy-purposes': {},
+        'privacy-records': {},
         contacts: {},
         interactions: {},
         tasks: {},
