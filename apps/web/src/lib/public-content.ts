@@ -62,17 +62,35 @@ const organizationPath = (): string => {
   return `/api/public/v1/${encodeURIComponent(organization)}`
 }
 
+const listAll = async <T>(path: string): Promise<T[]> => {
+  const result: T[] = []
+  const limit = 50
+  let page = 1
+
+  while (true) {
+    const separator = path.includes('?') ? '&' : '?'
+    const response = await request<PublicListEnvelope<T>>(
+      `${path}${separator}limit=${limit}&page=${page}`,
+    )
+    result.push(...response.data)
+
+    if (!response.pagination.hasNextPage || page >= response.pagination.totalPages) {
+      break
+    }
+
+    page += 1
+  }
+
+  return result
+}
+
 export const getPublicOrganization = async (): Promise<PublicOrganization> => {
   const response = await request<PublicEnvelope<PublicOrganization>>(`${organizationPath()}/site`)
   return response.data
 }
 
-export const listPublicPages = async (): Promise<PublicPageSummary[]> => {
-  const response = await request<PublicListEnvelope<PublicPageSummary>>(
-    `${organizationPath()}/pages?limit=50`,
-  )
-  return response.data
-}
+export const listPublicPages = async (): Promise<PublicPageSummary[]> =>
+  listAll<PublicPageSummary>(`${organizationPath()}/pages`)
 
 export const getPublicPage = async (slug: string): Promise<PublicPage> => {
   const response = await request<PublicEnvelope<PublicPage>>(
@@ -81,12 +99,8 @@ export const getPublicPage = async (slug: string): Promise<PublicPage> => {
   return response.data
 }
 
-export const listPublicPosts = async (): Promise<PublicPostSummary[]> => {
-  const response = await request<PublicListEnvelope<PublicPostSummary>>(
-    `${organizationPath()}/posts?limit=50`,
-  )
-  return response.data
-}
+export const listPublicPosts = async (): Promise<PublicPostSummary[]> =>
+  listAll<PublicPostSummary>(`${organizationPath()}/posts`)
 
 export const getPublicPost = async (slug: string): Promise<PublicPost> => {
   const response = await request<PublicEnvelope<PublicPost>>(
