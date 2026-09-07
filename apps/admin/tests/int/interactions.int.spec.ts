@@ -161,6 +161,34 @@ describe('CRM interactions', () => {
     expect(interaction.externalReference).toBe('legacy-interaction-1')
   })
 
+  test('keeps createdBy immutable when staff update an interaction', async () => {
+    const interaction = await payload.create({
+      collection: 'interactions',
+      overrideAccess: false,
+      user: asRequestUser(adminA) as any,
+      data: {
+        kind: 'note',
+        subject: 'Original attributed note',
+        contacts: [contactA1.id],
+        organization: organizationA.id,
+      } as any,
+    })
+
+    const updated = await payload.update({
+      collection: 'interactions',
+      id: interaction.id,
+      overrideAccess: false,
+      user: asRequestUser(adminA) as any,
+      data: {
+        subject: 'Updated attributed note',
+        createdBy: adminB.id,
+      } as any,
+    })
+
+    expect(updated.subject).toBe('Updated attributed note')
+    expect(relationshipID(updated.createdBy)).toBe(adminA.id)
+  })
+
   test('rejects cross-tenant contacts even when an interaction tenant is crafted manually', async () => {
     await expect(
       payload.create({
