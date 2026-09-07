@@ -1,0 +1,1 @@
+The CRM custom-fields foundation is tracked in issue #52 and is intended to satisfy the `custom fields strategy` item in milestone 0.3 once merged. The main roadmap should be marked complete for that item only after migration and CI validation pass.
