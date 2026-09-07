@@ -29,6 +29,7 @@ import { Tasks } from './collections/Tasks'
 import { Users } from './collections/Users'
 import { VolunteerAssignments } from './collections/VolunteerAssignments'
 import { VolunteerShifts } from './collections/VolunteerShifts'
+import { contactCsvEndpoints } from './crm/contact-csv-endpoints'
 import { publicContentEndpoints } from './public-api/endpoints'
 import { SITE_SYNC_QUEUE, siteSyncTask } from './site-rebuild/task'
 
@@ -81,7 +82,7 @@ export default buildConfig({
     push: shouldPushSchema,
   }),
   editor: lexicalEditor(),
-  endpoints: publicContentEndpoints,
+  endpoints: [...publicContentEndpoints, ...contactCsvEndpoints],
   jobs: {
     enableConcurrencyControl: true,
     tasks: [siteSyncTask],
