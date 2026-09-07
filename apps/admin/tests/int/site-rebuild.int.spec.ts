@@ -46,6 +46,17 @@ const richTextFixture = {
 
 const bodyOf = (call: any[]) => JSON.parse(String(call[1]?.body)) as any
 
+const queuedSiteSyncJobs = async () => {
+  const result = await payload.find({
+    collection: 'payload-jobs',
+    overrideAccess: true,
+    limit: 100,
+    sort: 'createdAt',
+  } as any)
+
+  return result.docs.filter((job: any) => job.taskSlug === 'siteSync') as any[]
+}
+
 describe('generic static-site rebuild requests', () => {
   let organization: any
   let editor: any
@@ -237,7 +248,7 @@ describe('generic static-site rebuild requests', () => {
     expect(JSON.stringify(warn.mock.calls)).not.toContain('must-not-appear-in-logs')
   })
 
-  test('triggers rebuilds for published content but not draft-only writes', async () => {
+  test('queues published content changes transactionally and delivers them through the worker', async () => {
     vi.stubEnv('ASSOSTACK_SITE_REBUILD_WEBHOOK_URL', 'https://deploy.example.test/site-sync')
     const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 202 }))
     vi.stubGlobal('fetch', fetchMock)
@@ -256,6 +267,7 @@ describe('generic static-site rebuild requests', () => {
       } as any,
     })
 
+    expect((await queuedSiteSyncJobs()).filter((job) => job.input?.reason === 'page.published')).toHaveLength(0)
     expect(fetchMock).not.toHaveBeenCalled()
 
     await payload.update({
@@ -271,6 +283,7 @@ describe('generic static-site rebuild requests', () => {
       } as any,
     })
 
+    expect((await queuedSiteSyncJobs()).filter((job) => job.input?.reason === 'page.published')).toHaveLength(0)
     expect(fetchMock).not.toHaveBeenCalled()
 
     await payload.update({
@@ -285,6 +298,24 @@ describe('generic static-site rebuild requests', () => {
       } as any,
     })
 
+    const queued = (await queuedSiteSyncJobs()).filter(
+      (job) => job.input?.reason === 'page.published',
+    )
+    expect(queued).toHaveLength(1)
+    expect(queued[0]?.input).toMatchObject({
+      action: 'rebuild',
+      organizationSlug: 'site-rebuild-association',
+      reason: 'page.published',
+    })
+
+    // Delivery is intentionally not performed inside the CMS transaction.
+    expect(fetchMock).not.toHaveBeenCalled()
+
+    await payload.jobs.run({
+      queue: 'site-sync',
+      limit: 10,
+    })
+
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(bodyOf(fetchMock.mock.calls[0] as any[])).toMatchObject({
       action: 'rebuild',
@@ -293,9 +324,10 @@ describe('generic static-site rebuild requests', () => {
     })
   })
 
-  test('keeps a successful CMS write when the rebuild provider is unavailable', async () => {
+  test('keeps the CMS write independent from provider availability', async () => {
     vi.stubEnv('ASSOSTACK_SITE_REBUILD_WEBHOOK_URL', 'https://deploy.example.test/site-sync')
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('provider unavailable')))
+    const fetchMock = vi.fn().mockRejectedValue(new Error('provider unavailable'))
+    vi.stubGlobal('fetch', fetchMock)
 
     const published = await payload.create({
       collection: 'posts',
@@ -312,9 +344,15 @@ describe('generic static-site rebuild requests', () => {
     })
 
     expect(published._status).toBe('published')
+    expect(fetchMock).not.toHaveBeenCalled()
+
+    const queued = (await queuedSiteSyncJobs()).filter(
+      (job) => job.input?.reason === 'post.published',
+    )
+    expect(queued).toHaveLength(1)
   })
 
-  test('requests a disable action when an organization website is disabled', async () => {
+  test('queues a disable action when an organization website is disabled', async () => {
     vi.stubEnv('ASSOSTACK_SITE_REBUILD_WEBHOOK_URL', 'https://deploy.example.test/site-sync')
     const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 202 }))
     vi.stubGlobal('fetch', fetchMock)
@@ -333,6 +371,22 @@ describe('generic static-site rebuild requests', () => {
           },
         },
       } as any,
+    })
+
+    // The newer organization state supersedes any older pending rebuild for the same organization.
+    const queued = await queuedSiteSyncJobs()
+    const disableJobs = queued.filter((job) => job.input?.reason === 'organization.disabled')
+    expect(disableJobs).toHaveLength(1)
+    expect(disableJobs[0]?.input).toMatchObject({
+      action: 'disable',
+      organizationSlug: 'site-rebuild-association',
+      reason: 'organization.disabled',
+    })
+    expect(fetchMock).not.toHaveBeenCalled()
+
+    await payload.jobs.run({
+      queue: 'site-sync',
+      limit: 10,
     })
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
