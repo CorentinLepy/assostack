@@ -3,6 +3,10 @@ import type { CollectionConfig } from 'payload'
 import { isPlatformAdmin, organizationRecordAccess } from '../access/organizations'
 import { builtInPublicRouteOptions } from '../cms/public-routes'
 import { validateWebsiteSettings } from '../hooks/validateWebsiteSettings'
+import {
+  organizationSiteSyncAfterChange,
+  organizationSiteSyncAfterDelete,
+} from '../site-rebuild/hooks'
 
 const validateHexColor = (value: unknown): true | string => {
   if (value === null || value === undefined || value === '') {
@@ -27,6 +31,8 @@ export const Organizations: CollectionConfig = {
     delete: ({ req }) => isPlatformAdmin(req.user),
   },
   hooks: {
+    afterChange: [organizationSiteSyncAfterChange],
+    afterDelete: [organizationSiteSyncAfterDelete],
     beforeChange: [validateWebsiteSettings],
   },
   fields: [
