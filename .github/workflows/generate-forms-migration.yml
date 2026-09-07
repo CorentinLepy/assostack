@@ -2,6 +2,11 @@ name: Generate forms migration
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - association/forms-submissions
+    paths:
+      - .github/workflows/generate-forms-migration.yml
 
 permissions:
   contents: read
