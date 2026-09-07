@@ -17,6 +17,7 @@ import { Events } from './collections/Events'
 import { FormSubmissions } from './collections/FormSubmissions'
 import { Forms } from './collections/Forms'
 import { Interactions } from './collections/Interactions'
+import { Integrations } from './collections/Integrations'
 import { Memberships } from './collections/Memberships'
 import { MembershipTypes } from './collections/MembershipTypes'
 import { Media } from './collections/Media'
@@ -69,6 +70,7 @@ export default buildConfig({
     VolunteerAssignments,
     Partnerships,
     Interactions,
+    Integrations,
     Notes,
     Tasks,
     PrivacyRecords,
@@ -122,6 +124,7 @@ export default buildConfig({
         partnerships: {},
         contacts: {},
         interactions: {},
+        integrations: {},
         notes: {},
         tasks: {},
         documents: {},
