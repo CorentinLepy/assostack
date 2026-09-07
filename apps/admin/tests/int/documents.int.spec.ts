@@ -8,13 +8,13 @@ const asRequestUser = <T extends object>(user: T) => ({ ...structuredClone(user)
 const persistedRequestUser = async (user: { id: number | string }) =>
   asRequestUser(await payload.findByID({ collection: 'users', id: user.id, depth: 0, overrideAccess: true }))
 const relationshipID = (value: any) => (value && typeof value === 'object' && 'id' in value ? value.id : value)
-const pdfFixture = Buffer.from('%PDF-1.4\n% AssoStack private document fixture\n')
+const textFixture = Buffer.from('AssoStack private document fixture\n', 'utf-8')
 
 const documentFile = (name: string) => ({
-  data: pdfFixture,
-  mimetype: 'application/pdf',
+  data: textFixture,
+  mimetype: 'text/plain',
   name,
-  size: pdfFixture.length,
+  size: textFixture.length,
 })
 
 describe('Association documents', () => {
@@ -54,14 +54,14 @@ describe('Association documents', () => {
         category: 'agreement',
         contact: contactA.id,
       } as any,
-      file: documentFile('volunteer-agreement.pdf'),
+      file: documentFile('volunteer-agreement.txt'),
     })
 
     expect(document.status).toBe('active')
     expect(relationshipID(document.organization)).toBe(organizationA.id)
     expect(relationshipID(document.contact)).toBe(contactA.id)
     expect(relationshipID(document.createdBy)).toBe(editorA.id)
-    expect(document.mimeType).toBe('application/pdf')
+    expect(document.mimeType).toBe('text/plain')
 
     const updated = await payload.update({
       collection: 'documents',
@@ -82,7 +82,7 @@ describe('Association documents', () => {
         overrideAccess: false,
         user: (await persistedRequestUser(adminA)) as any,
         data: { organization: organizationA.id, title: 'Invalid cross tenant', contact: contactB.id } as any,
-        file: documentFile('invalid-cross-tenant.pdf'),
+        file: documentFile('invalid-cross-tenant.txt'),
       }),
     ).rejects.toThrow()
   })
@@ -97,7 +97,7 @@ describe('Association documents', () => {
       overrideAccess: false,
       user: (await persistedRequestUser(adminB)) as any,
       data: { organization: organizationB.id, title: 'Beta private file' } as any,
-      file: documentFile('beta-private.pdf'),
+      file: documentFile('beta-private.txt'),
     })
 
     const alpha = await payload.find({
@@ -115,7 +115,7 @@ describe('Association documents', () => {
       overrideAccess: false,
       user: (await persistedRequestUser(editorA)) as any,
       data: { organization: organizationA.id, title: 'Deletion policy' } as any,
-      file: documentFile('deletion-policy.pdf'),
+      file: documentFile('deletion-policy.txt'),
     })
 
     await expect(
