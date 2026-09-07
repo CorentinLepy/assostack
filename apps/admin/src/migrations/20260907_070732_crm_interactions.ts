@@ -50,14 +50,11 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "interactions" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "interactions_rels" DISABLE ROW LEVEL SECURITY;
-  DROP TABLE "interactions" CASCADE;
-  DROP TABLE "interactions_rels" CASCADE;
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_interactions_fk";
-  
-  DROP INDEX "payload_locked_documents_rels_interactions_id_idx";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "interactions_id";
-  DROP TYPE "public"."enum_interactions_kind";
-  DROP TYPE "public"."enum_interactions_direction";`)
+  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_interactions_fk";
+  DROP INDEX IF EXISTS "payload_locked_documents_rels_interactions_id_idx";
+  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "interactions_id";
+  DROP TABLE IF EXISTS "interactions_rels" CASCADE;
+  DROP TABLE IF EXISTS "interactions" CASCADE;
+  DROP TYPE IF EXISTS "public"."enum_interactions_kind";
+  DROP TYPE IF EXISTS "public"."enum_interactions_direction";`)
 }
