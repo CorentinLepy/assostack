@@ -54,6 +54,9 @@ const hasSections = page.sections.length > 0
   pages={pages}
   title={page.meta.title ?? page.title}
   description={page.meta.description ?? page.summary}
+  canonicalPath={`/${page.slug}`}
+  image={page.meta.image}
+  updatedAt={page.updatedAt}
 >
   {
     hasSections ? (

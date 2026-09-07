@@ -60,6 +60,11 @@ const publishedDate = formatPublicDate(post.publishedAt, organization.locale, or
   pages={pages}
   title={post.meta.title ?? post.title}
   description={post.meta.description ?? post.excerpt}
+  canonicalPath={`/news/${post.slug}`}
+  contentType="article"
+  image={post.meta.image ?? post.heroImage}
+  publishedAt={post.publishedAt}
+  updatedAt={post.updatedAt}
 >
   <article class="news-article">
     <a class="news-article__back" href="/news">← {copy.backToNews}</a>
