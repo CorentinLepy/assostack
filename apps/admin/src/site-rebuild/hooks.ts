@@ -5,8 +5,9 @@ import type {
 } from 'payload'
 
 import { getRelationshipID } from '../access/organizations'
+import { SITE_SYNC_QUEUE, SITE_SYNC_TASK } from './task'
 import {
-  deliverSiteSyncRequest,
+  isSiteSyncConfigured,
   type SiteSyncAction,
   type SiteSyncReason,
 } from './webhook'
@@ -96,6 +97,34 @@ const resolveOrganizationContext = async (
   }
 }
 
+const queueSiteSyncRequest = async ({
+  action,
+  organizationSlug,
+  reason,
+  req,
+}: {
+  action: SiteSyncAction
+  organizationSlug: string
+  reason: SiteSyncReason
+  req: PayloadRequest
+}) => {
+  if (!isSiteSyncConfigured()) {
+    return
+  }
+
+  await req.payload.jobs.queue({
+    task: SITE_SYNC_TASK,
+    queue: SITE_SYNC_QUEUE,
+    input: {
+      action,
+      occurredAt: new Date().toISOString(),
+      organizationSlug,
+      reason,
+    },
+    req,
+  })
+}
+
 const requestContentSiteSync = async ({
   doc,
   kind,
@@ -125,7 +154,7 @@ const requestContentSiteSync = async ({
     return
   }
 
-  await deliverSiteSyncRequest({
+  await queueSiteSyncRequest({
     action: 'rebuild',
     organizationSlug: organization.slug,
     reason,
@@ -155,7 +184,7 @@ export const createPublicContentSiteSyncAfterDelete = (
     if (!req.context.disableSiteSync && isPublished(doc)) {
       const organization = await resolveOrganizationContext(req, (doc as DocumentLike).organization)
       if (organization?.publicSiteEnabled) {
-        await deliverSiteSyncRequest({
+        await queueSiteSyncRequest({
           action: 'rebuild',
           organizationSlug: organization.slug,
           reason: `${kind}.deleted`,
@@ -190,21 +219,37 @@ export const organizationSiteSyncAfterChange: CollectionAfterChangeHook = async 
   previousDoc,
   req,
 }) => {
-  if (
-    operation !== 'update' ||
-    req.context.disableSiteSync ||
-    publicOrganizationSnapshot(doc) === publicOrganizationSnapshot(previousDoc)
-  ) {
+  if (req.context.disableSiteSync) {
     return doc
   }
 
   const current = doc as DocumentLike
   const previous = (previousDoc ?? {}) as DocumentLike
   const currentSlug = typeof current.slug === 'string' ? current.slug : null
+
+  if (operation === 'create') {
+    if (currentSlug && organizationSiteAction(current) === 'rebuild') {
+      await queueSiteSyncRequest({
+        action: 'rebuild',
+        organizationSlug: currentSlug,
+        reason: 'organization.created',
+        req,
+      })
+    }
+    return doc
+  }
+
+  if (
+    operation !== 'update' ||
+    publicOrganizationSnapshot(doc) === publicOrganizationSnapshot(previousDoc)
+  ) {
+    return doc
+  }
+
   const previousSlug = typeof previous.slug === 'string' ? previous.slug : null
 
   if (previousSlug && currentSlug && previousSlug !== currentSlug) {
-    await deliverSiteSyncRequest({
+    await queueSiteSyncRequest({
       action: 'disable',
       organizationSlug: previousSlug,
       reason: 'organization.slug-changed',
@@ -214,7 +259,7 @@ export const organizationSiteSyncAfterChange: CollectionAfterChangeHook = async 
 
   if (currentSlug) {
     const action = organizationSiteAction(current)
-    await deliverSiteSyncRequest({
+    await queueSiteSyncRequest({
       action,
       organizationSlug: currentSlug,
       reason: action === 'disable' ? 'organization.disabled' : 'organization.updated',
@@ -232,7 +277,7 @@ export const organizationSiteSyncAfterDelete: CollectionAfterDeleteHook = async 
 
   const organization = (doc ?? {}) as DocumentLike
   if (typeof organization.slug === 'string' && organization.slug.length > 0) {
-    await deliverSiteSyncRequest({
+    await queueSiteSyncRequest({
       action: 'disable',
       organizationSlug: organization.slug,
       reason: 'organization.deleted',
