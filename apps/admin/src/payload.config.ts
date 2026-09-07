@@ -10,6 +10,8 @@ import { isPlatformAdmin } from './access/organizations'
 import { Contacts } from './collections/Contacts'
 import { ContactTags } from './collections/ContactTags'
 import { Interactions } from './collections/Interactions'
+import { Memberships } from './collections/Memberships'
+import { MembershipTypes } from './collections/MembershipTypes'
 import { Media } from './collections/Media'
 import { Organizations } from './collections/Organizations'
 import { Pages } from './collections/Pages'
@@ -41,7 +43,9 @@ export default buildConfig({
     Users,
     ContactTags,
     PrivacyPurposes,
+    MembershipTypes,
     Contacts,
+    Memberships,
     Interactions,
     Tasks,
     PrivacyRecords,
@@ -79,6 +83,8 @@ export default buildConfig({
         'contact-tags': {},
         'privacy-purposes': {},
         'privacy-records': {},
+        'membership-types': {},
+        memberships: {},
         contacts: {},
         interactions: {},
         tasks: {},
