@@ -50,7 +50,7 @@ Goal: establish the reusable relationship-management core.
 - activities/interactions
 - notes
 - tasks and reminders
-- custom fields strategy
+- custom fields strategy — tenant-safe Contact custom field definitions and typed values implemented
 - import/export foundation
 - privacy/consent metadata
 

@@ -15,6 +15,7 @@ import * as migration_20260907_162849_events_registrations from './20260907_1628
 import * as migration_20260907_164047_volunteer_shifts_assignments from './20260907_164047_volunteer_shifts_assignments';
 import * as migration_20260907_180657_partnerships from './20260907_180657_partnerships';
 import * as migration_20260907_181843_crm_notes from './20260907_181843_crm_notes';
+import * as migration_20260907_193056_crm_custom_fields from './20260907_193056_crm_custom_fields';
 
 export const migrations = [
   {
@@ -100,6 +101,11 @@ export const migrations = [
   {
     up: migration_20260907_181843_crm_notes.up,
     down: migration_20260907_181843_crm_notes.down,
-    name: '20260907_181843_crm_notes'
+    name: '20260907_181843_crm_notes',
+  },
+  {
+    up: migration_20260907_193056_crm_custom_fields.up,
+    down: migration_20260907_193056_crm_custom_fields.down,
+    name: '20260907_193056_crm_custom_fields'
   },
 ];
