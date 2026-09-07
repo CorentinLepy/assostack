@@ -96,12 +96,13 @@ describe('Association forms and submissions', () => {
       } as any,
     })
 
+    const submissionValues = submission.values ?? []
     expect(relationshipID(submission.form)).toBe(formA.id)
     expect(relationshipID(submission.contact)).toBe(contactA.id)
     expect(relationshipID(submission.createdBy)).toBe(editorA.id)
     expect(submission.submittedAt).toEqual(expect.any(String))
-    expect(submission.values.find((value: any) => value.fieldKey === 'full-name')?.fieldLabel).toBe('Full name')
-    expect(submission.values.find((value: any) => value.fieldKey === 'available')?.booleanValue).toBe(false)
+    expect(submissionValues.find((value: any) => value.fieldKey === 'full-name')?.fieldLabel).toBe('Full name')
+    expect(submissionValues.find((value: any) => value.fieldKey === 'available')?.booleanValue).toBe(false)
   })
 
   test('rejects missing required fields, invalid select values and invalid emails', async () => {
@@ -122,11 +123,12 @@ describe('Association forms and submissions', () => {
     const submission = await payload.create({ collection: 'form-submissions', overrideAccess: false, user: (await persistedRequestUser(adminA)) as any, data: { organization: organizationA.id, form: formA.id, contact: contactA.id, source: 'api', values: [{ fieldKey: 'full-name', fieldLabel: 'x', fieldType: 'short-text', textValue: 'Immutable User' }, { fieldKey: 'email', fieldLabel: 'x', fieldType: 'email', textValue: 'immutable@example.test' }, { fieldKey: 'available', fieldLabel: 'x', fieldType: 'boolean', booleanValue: true }] } as any })
 
     const updated = await payload.update({ collection: 'form-submissions', id: submission.id, overrideAccess: false, user: (await persistedRequestUser(editorA)) as any, data: { status: 'reviewing', form: formB.id, contact: contactB.id, source: 'integration', values: [{ fieldKey: 'full-name', fieldLabel: 'x', fieldType: 'short-text', textValue: 'Changed' }] } as any })
+    const updatedValues = updated.values ?? []
     expect(updated.status).toBe('reviewing')
     expect(relationshipID(updated.form)).toBe(formA.id)
     expect(relationshipID(updated.contact)).toBe(contactA.id)
     expect(updated.source).toBe('api')
-    expect(updated.values.find((value: any) => value.fieldKey === 'full-name')?.textValue).toBe('Immutable User')
+    expect(updatedValues.find((value: any) => value.fieldKey === 'full-name')?.textValue).toBe('Immutable User')
   })
 
   test('prevents schema changes and deletion once submission history exists', async () => {
