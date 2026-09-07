@@ -60,6 +60,8 @@ const getWebhookURL = (): URL | null => {
   }
 }
 
+export const isSiteSyncConfigured = (): boolean => getWebhookURL() !== null
+
 const errorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : 'Unknown site sync delivery error'
 
@@ -117,7 +119,7 @@ export const deliverSiteSyncRequest = async ({
   } catch (error) {
     req.payload.logger.warn({
       err: errorMessage(error),
-      msg: 'Site sync webhook delivery failed; the CMS write remains committed.',
+      msg: 'Site sync webhook delivery failed.',
       organization: organizationSlug,
       reason,
     })
