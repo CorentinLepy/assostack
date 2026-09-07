@@ -1,3 +1,4 @@
+import { sanitizeProviderError } from './secrets'
 import type { IntegrationAdapter, IntegrationError, IntegrationLogger } from './types'
 
 export type WebhookEventStore = {
@@ -52,7 +53,7 @@ export const processInboundWebhook = async ({
     logger?.warn('Inbound integration webhook rejected.', { organizationID, integrationID })
     return {
       status: 'rejected',
-      error: { code: 'webhook-invalid', message: error instanceof Error ? error.message : 'Invalid webhook.' },
+      error: { code: 'webhook-invalid', message: sanitizeProviderError(error) },
     }
   }
 }
