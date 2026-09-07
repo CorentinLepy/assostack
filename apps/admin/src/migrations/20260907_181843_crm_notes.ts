@@ -33,10 +33,9 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "notes" DISABLE ROW LEVEL SECURITY;
-  DROP TABLE "notes" CASCADE;
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_notes_fk";
-  
-  DROP INDEX "payload_locked_documents_rels_notes_id_idx";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "notes_id";`)
+  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_notes_fk";
+  DROP INDEX IF EXISTS "payload_locked_documents_rels_notes_id_idx";
+  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "notes_id";
+  ALTER TABLE "notes" DISABLE ROW LEVEL SECURITY;
+  DROP TABLE "notes" CASCADE;`)
 }
