@@ -45,6 +45,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "privacy_purposes_organization_idx" ON "privacy_purposes" USING btree ("organization_id");
   CREATE INDEX "privacy_purposes_name_idx" ON "privacy_purposes" USING btree ("name");
   CREATE INDEX "privacy_purposes_key_idx" ON "privacy_purposes" USING btree ("key");
+  CREATE UNIQUE INDEX "privacy_purposes_organization_key_unique" ON "privacy_purposes" USING btree ("organization_id", "key");
   CREATE INDEX "privacy_purposes_legal_basis_idx" ON "privacy_purposes" USING btree ("legal_basis");
   CREATE INDEX "privacy_purposes_status_idx" ON "privacy_purposes" USING btree ("status");
   CREATE INDEX "privacy_purposes_archived_at_idx" ON "privacy_purposes" USING btree ("archived_at");
@@ -69,18 +70,16 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "privacy_purposes" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "privacy_records" DISABLE ROW LEVEL SECURITY;
-  DROP TABLE "privacy_purposes" CASCADE;
-  DROP TABLE "privacy_records" CASCADE;
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_privacy_purposes_fk";
-  
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_privacy_records_fk";
-  
   DROP INDEX "payload_locked_documents_rels_privacy_purposes_id_idx";
   DROP INDEX "payload_locked_documents_rels_privacy_records_id_idx";
   ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "privacy_purposes_id";
   ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "privacy_records_id";
+  ALTER TABLE "privacy_records" DISABLE ROW LEVEL SECURITY;
+  ALTER TABLE "privacy_purposes" DISABLE ROW LEVEL SECURITY;
+  DROP TABLE "privacy_records" CASCADE;
+  DROP TABLE "privacy_purposes" CASCADE;
   DROP TYPE "public"."enum_privacy_purposes_legal_basis";
   DROP TYPE "public"."enum_privacy_purposes_status";
   DROP TYPE "public"."enum_privacy_records_event_type";
