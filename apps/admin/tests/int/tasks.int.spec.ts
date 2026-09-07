@@ -153,7 +153,7 @@ describe('CRM tasks', () => {
     expect(task.completedAt).toBeNull()
     expect(relationshipID(task.createdBy)).toBe(adminA.id)
     expect(relationshipID(task.assignee)).toBe(adminA.id)
-    expect(task.contacts.map(relationshipID)).toContain(contactA.id)
+    expect((task.contacts ?? []).map(relationshipID)).toContain(contactA.id)
   })
 
   test('maintains completion metadata when a task is completed and reopened', async () => {
