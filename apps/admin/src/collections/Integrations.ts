@@ -10,6 +10,7 @@ import {
 } from '../access/organizations'
 import { assertOrganizationWriteAccess } from '../hooks/assertOrganizationWriteAccess'
 import { createDefaultIntegrationRegistry } from '../integrations/registry'
+import { isSecretReference } from '../integrations/secrets'
 import { integrationProviders } from '../integrations/types'
 
 const providerOptions = integrationProviders.map((value) => ({
@@ -29,14 +30,27 @@ const canCreateIntegration = ({ data, req }: { data?: unknown; req: { user: unkn
   return organizationID !== null && hasOrganizationRole(req.user, organizationID, ['organization-admin'])
 }
 
-const assertIntegrationOrganizationWriteAccess = ({ data, req }: { data?: unknown; req: { user: unknown; t: any } }) => {
+const assertIntegrationOrganizationWriteAccess = ({
+  data,
+  originalDoc,
+  req,
+}: {
+  data?: unknown
+  originalDoc?: unknown
+  req: { user: unknown; t: any }
+}) => {
   if (isPlatformAdmin(req.user)) {
     return data
   }
 
-  const organization =
+  const dataOrganization =
     data && typeof data === 'object' && 'organization' in data ? (data as { organization?: unknown }).organization : null
-  const organizationID = getRelationshipID(organization as any)
+  const originalOrganization =
+    originalDoc && typeof originalDoc === 'object' && 'organization' in originalDoc
+      ? (originalDoc as { organization?: unknown }).organization
+      : null
+  const organizationID = getRelationshipID((dataOrganization ?? originalOrganization) as any)
+
   if (organizationID === null || !hasOrganizationRole(req.user, organizationID, ['organization-admin'])) {
     throw new Forbidden(req.t)
   }
@@ -44,19 +58,9 @@ const assertIntegrationOrganizationWriteAccess = ({ data, req }: { data?: unknow
   return data
 }
 
-const assertPersistedIntegrationOrganization = ({ doc, req }: { doc: unknown; req: { user: unknown; t: any } }) => {
-  if (isPlatformAdmin(req.user)) {
-    return doc
-  }
-
-  const organization =
-    doc && typeof doc === 'object' && 'organization' in doc ? (doc as { organization?: unknown }).organization : null
-  const organizationID = getRelationshipID(organization as any)
-  if (organizationID === null || !hasOrganizationRole(req.user, organizationID, ['organization-admin'])) {
-    throw new Forbidden(req.t)
-  }
-
-  return doc
+const systemManagedFieldAccess = {
+  create: () => false,
+  update: () => false,
 }
 
 export const Integrations: CollectionConfig = {
@@ -75,7 +79,6 @@ export const Integrations: CollectionConfig = {
   hooks: {
     beforeValidate: [assertIntegrationOrganizationWriteAccess],
     beforeChange: [assertOrganizationWriteAccess(['organization-admin'])],
-    afterChange: [assertPersistedIntegrationOrganization],
   },
   fields: [
     {
@@ -120,10 +123,11 @@ export const Integrations: CollectionConfig = {
     {
       name: 'secretRef',
       type: 'json',
+      validate: (value) => value == null || isSecretReference(value) || 'Secret reference must contain a non-empty key.',
       access: {
         read: () => false,
-        create: ({ req }) => canManageAnyOrganization(req.user),
-        update: ({ req }) => canManageAnyOrganization(req.user),
+        create: ({ req }) => canManageAnyOrganization(req.user, ['organization-admin']),
+        update: ({ req }) => canManageAnyOrganization(req.user, ['organization-admin']),
       },
       admin: {
         description: 'Opaque reference resolved by a SecretStore; it is never returned to API clients.',
@@ -132,17 +136,20 @@ export const Integrations: CollectionConfig = {
     {
       name: 'lastSuccessAt',
       type: 'date',
+      access: systemManagedFieldAccess,
       admin: { readOnly: true, position: 'sidebar' },
     },
     {
       name: 'lastFailureAt',
       type: 'date',
+      access: systemManagedFieldAccess,
       admin: { readOnly: true, position: 'sidebar' },
     },
     {
       name: 'lastError',
       type: 'textarea',
       maxLength: 500,
+      access: systemManagedFieldAccess,
       admin: { readOnly: true, position: 'sidebar' },
     },
   ],
