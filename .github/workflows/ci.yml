@@ -51,6 +51,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Verify Payload import map
+        run: |
+          pnpm --filter @assostack/admin generate:importmap
+          git diff --exit-code -- 'apps/admin/src/app/(payload)/admin/importMap.js'
+
       - name: Typecheck
         run: pnpm typecheck
 
