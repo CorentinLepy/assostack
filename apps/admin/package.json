@@ -15,7 +15,8 @@
     "migrate:create": "cross-env NODE_ENV=production NODE_OPTIONS=--no-deprecation payload migrate:create",
     "migrate:status": "cross-env NODE_ENV=production NODE_OPTIONS=--no-deprecation payload migrate:status",
     "migrate:down": "cross-env NODE_ENV=production NODE_OPTIONS=--no-deprecation payload migrate:down",
-    "payload": "cross-env NODE_OPTIONS=--no-deprecation payload"
+    "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
+    "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.88.0",
