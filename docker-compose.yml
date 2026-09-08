@@ -9,7 +9,7 @@ services:
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
-      - assostack-postgres:/var/lib/postgresql/data
+      - assostack-postgres:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-assostack} -d ${POSTGRES_DB:-assostack}"]
       interval: 5s

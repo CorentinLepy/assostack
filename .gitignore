@@ -19,3 +19,5 @@ apps/admin/src/payload-types.ts
 # Local IDE
 .vscode/
 .idea/
+
+*.tsbuildinfo
