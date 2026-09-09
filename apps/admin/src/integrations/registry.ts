@@ -1,4 +1,5 @@
 import { createSMTPAdapter } from './smtp-adapter'
+import { createBrevoAdapter } from './brevo-adapter'
 import { createWebhookAdapter } from './webhook-adapter'
 import { integrationProviders, type IntegrationAdapter, type IntegrationProvider } from './types'
 
@@ -45,6 +46,11 @@ export const createDefaultIntegrationRegistry = (): IntegrationRegistry => {
 
     if (provider === 'smtp') {
       registry.register(createSMTPAdapter())
+      continue
+    }
+
+    if (provider === 'brevo') {
+      registry.register(createBrevoAdapter())
       continue
     }
 

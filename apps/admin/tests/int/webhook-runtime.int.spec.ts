@@ -310,8 +310,8 @@ describe('generic inbound webhook runtime', () => {
       overrideAccess: true,
       user: asRequestUser({ platformRoles: ['platform-admin'] }) as any,
       data: {
-        name: 'Brevo integration',
-        provider: 'brevo',
+        name: 'HelloAsso integration',
+        provider: 'helloasso',
         status: 'enabled',
         organization: organizationA.id,
         config: {},
