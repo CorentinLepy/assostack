@@ -37,6 +37,7 @@ export type IntegrationAdapter<TConfig extends Record<string, unknown> = Record<
   }) => Promise<{ status: 'accepted' | 'not-implemented' }>
   verifyInboundWebhook?: (input: {
     body: string
+    config: TConfig
     headers: Headers
     secret: unknown
   }) => Promise<{ eventID: string; payload: unknown }>

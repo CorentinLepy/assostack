@@ -33,7 +33,9 @@ import { Tasks } from './collections/Tasks'
 import { Users } from './collections/Users'
 import { VolunteerAssignments } from './collections/VolunteerAssignments'
 import { VolunteerShifts } from './collections/VolunteerShifts'
+import { WebhookEvents } from './collections/WebhookEvents'
 import { contactCsvEndpoints } from './crm/contact-csv-endpoints'
+import { integrationEndpoints } from './integrations/webhook-endpoint'
 import { publicContentEndpoints } from './public-api/endpoints'
 import { SITE_SYNC_QUEUE, siteSyncTask } from './site-rebuild/task'
 
@@ -71,6 +73,7 @@ export default buildConfig({
     Partnerships,
     Interactions,
     Integrations,
+    WebhookEvents,
     Notes,
     Tasks,
     PrivacyRecords,
@@ -90,7 +93,7 @@ export default buildConfig({
     push: shouldPushSchema,
   }),
   editor: lexicalEditor(),
-  endpoints: [...publicContentEndpoints, ...contactCsvEndpoints],
+  endpoints: [...publicContentEndpoints, ...contactCsvEndpoints, ...integrationEndpoints],
   jobs: {
     enableConcurrencyControl: true,
     tasks: [siteSyncTask],
@@ -125,6 +128,7 @@ export default buildConfig({
         contacts: {},
         interactions: {},
         integrations: {},
+        'webhook-events': {},
         notes: {},
         tasks: {},
         documents: {},

@@ -1,3 +1,4 @@
+import { createWebhookAdapter } from './webhook-adapter'
 import { integrationProviders, type IntegrationAdapter, type IntegrationProvider } from './types'
 
 export class IntegrationRegistry {
@@ -33,6 +34,11 @@ const createPlaceholderAdapter = (provider: IntegrationProvider): IntegrationAda
 export const createDefaultIntegrationRegistry = (): IntegrationRegistry => {
   const registry = new IntegrationRegistry()
   for (const provider of integrationProviders) {
+    if (provider === 'webhook') {
+      registry.register(createWebhookAdapter())
+      continue
+    }
+
     registry.register(createPlaceholderAdapter(provider))
   }
   return registry

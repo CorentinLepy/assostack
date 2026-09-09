@@ -2,13 +2,18 @@ import { sanitizeProviderError } from './secrets'
 import type { IntegrationAdapter, IntegrationError, IntegrationLogger } from './types'
 
 export type WebhookEventStore = {
-  has: (key: string) => Promise<boolean>
-  record: (key: string) => Promise<void>
+  // Must be atomic: concurrent duplicate deliveries must never both resolve to 'accepted'.
+  recordIfNew: (input: {
+    eventID: string
+    integrationID: string | number
+    organizationID: string | number
+  }) => Promise<'accepted' | 'duplicate'>
 }
 
 export type InboundWebhookInput = {
   adapter: IntegrationAdapter
   body: string
+  config: unknown
   headers: Headers
   integrationID: string | number
   organizationID: string | number
@@ -25,6 +30,7 @@ export type InboundWebhookResult =
 export const processInboundWebhook = async ({
   adapter,
   body,
+  config,
   headers,
   integrationID,
   organizationID,
@@ -39,16 +45,9 @@ export const processInboundWebhook = async ({
     }
   }
 
+  let verified: { eventID: string; payload: unknown }
   try {
-    const verified = await adapter.verifyInboundWebhook({ body, headers, secret })
-    const idempotencyKey = `${organizationID}:${integrationID}:${verified.eventID}`
-
-    if (await store.has(idempotencyKey)) {
-      return { status: 'duplicate', eventID: verified.eventID }
-    }
-
-    await store.record(idempotencyKey)
-    return { status: 'accepted', eventID: verified.eventID, payload: verified.payload }
+    verified = await adapter.verifyInboundWebhook({ body, config: config as never, headers, secret })
   } catch (error) {
     logger?.warn('Inbound integration webhook rejected.', { organizationID, integrationID })
     return {
@@ -56,4 +55,11 @@ export const processInboundWebhook = async ({
       error: { code: 'webhook-invalid', message: sanitizeProviderError(error) },
     }
   }
+
+  const outcome = await store.recordIfNew({ eventID: verified.eventID, integrationID, organizationID })
+  if (outcome === 'duplicate') {
+    return { status: 'duplicate', eventID: verified.eventID }
+  }
+
+  return { status: 'accepted', eventID: verified.eventID, payload: verified.payload }
 }

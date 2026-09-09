@@ -22,6 +22,10 @@ Credentials are not stored in `config` and are never returned by the collection.
 
 `processInboundWebhook` delegates signature and payload verification to the adapter, binds idempotency to the organization and integration, and rejects unsupported or invalid inbound webhooks. A persistent event-store implementation should record accepted event IDs before asynchronous domain processing. Payload jobs remain the execution mechanism for work that should be retried or deferred, following the existing CMS rebuild task pattern. Outbound delivery belongs behind an adapter capability and must use an explicit organization execution context.
 
+### Generic inbound webhook runtime
+
+Enabled generic webhook integrations receive `POST /api/integrations/:id/webhook`. By default, the request must include `x-assostack-signature` and the stable event identifier in `x-assostack-event-id`. The signature is an HMAC-SHA256 over the exact raw request body, supplied as a lowercase hexadecimal digest with an optional `sha256=` prefix. The signing secret is resolved through the integration `secretRef` and `SecretStore`, never from webhook configuration. Idempotency is enforced at the organization, integration, and event ID boundary in the persisted webhook event ledger. The runtime verifies and records deliveries only; no domain or CRM processing occurs yet.
+
 ## Adding a provider
 
 1. Add the provider identifier to `integrationProviders`.
