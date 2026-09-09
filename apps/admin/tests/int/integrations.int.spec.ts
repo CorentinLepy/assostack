@@ -1,10 +1,14 @@
 import config from '@/payload.config'
+import { randomUUID } from 'node:crypto'
 import { getPayload, type Payload } from 'payload'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
 import { createDefaultIntegrationRegistry } from '../../src/integrations/registry'
 import { createProviderFailureState } from '../../src/integrations/health'
+import { createPayloadWebhookEventStore } from '../../src/integrations/webhook-event-store'
 import { processInboundWebhook, type WebhookEventStore } from '../../src/integrations/webhooks'
+
+const suiteSuffix = randomUUID()
 
 const asRequestUser = <T extends Record<string, unknown>>(user: T) => ({
   ...user,
@@ -24,18 +28,18 @@ describe('integration foundation', () => {
     organizationA = await payload.create({
       collection: 'organizations',
       overrideAccess: true,
-      data: { name: 'Integration Alpha', slug: 'integration-alpha', status: 'active' } as any,
+      data: { name: 'Integration Alpha', slug: `integration-alpha-${suiteSuffix}`, status: 'active' } as any,
     })
     organizationB = await payload.create({
       collection: 'organizations',
       overrideAccess: true,
-      data: { name: 'Integration Beta', slug: 'integration-beta', status: 'active' } as any,
+      data: { name: 'Integration Beta', slug: `integration-beta-${suiteSuffix}`, status: 'active' } as any,
     })
     await payload.create({
       collection: 'users',
       overrideAccess: true,
       data: {
-        email: 'integration-platform-admin@assostack.test',
+        email: `integration-platform-admin-${suiteSuffix}@assostack.test`,
         password: 'test-password-123',
         name: 'Integration Platform Admin',
         platformRoles: ['platform-admin'],
@@ -45,7 +49,7 @@ describe('integration foundation', () => {
       collection: 'users',
       overrideAccess: true,
       data: {
-        email: 'integration-admin-a@assostack.test',
+        email: `integration-admin-a-${suiteSuffix}@assostack.test`,
         password: 'test-password-123',
         name: 'Integration Admin A',
         platformRoles: ['user'],
@@ -56,7 +60,7 @@ describe('integration foundation', () => {
       collection: 'users',
       overrideAccess: true,
       data: {
-        email: 'integration-member-a@assostack.test',
+        email: `integration-member-a-${suiteSuffix}@assostack.test`,
         password: 'test-password-123',
         name: 'Integration Member A',
         platformRoles: ['user'],
@@ -88,10 +92,16 @@ describe('integration foundation', () => {
   })
 
   test('accepts a verified webhook once and treats the duplicate as idempotent', async () => {
-    const keys = new Set<string>()
+    const accepted = new Set<string>()
     const store: WebhookEventStore = {
-      has: async (key) => keys.has(key),
-      record: async (key) => void keys.add(key),
+      recordIfNew: async ({ eventID, integrationID, organizationID }) => {
+        const key = `${organizationID}:${integrationID}:${eventID}`
+        if (accepted.has(key)) {
+          return 'duplicate'
+        }
+        accepted.add(key)
+        return 'accepted'
+      },
     }
     const adapter = {
       provider: 'webhook' as const,
@@ -103,6 +113,7 @@ describe('integration foundation', () => {
     const input = {
       adapter,
       body: '{}',
+      config: {},
       headers: new Headers(),
       integrationID: 'integration-1',
       organizationID: organizationA.id,
@@ -128,13 +139,29 @@ describe('integration foundation', () => {
       processInboundWebhook({
         adapter,
         body: '{}',
+        config: {},
         headers: new Headers(),
         integrationID: 'integration-1',
         organizationID: organizationA.id,
         secret: undefined,
-        store: { has: async () => false, record: async () => undefined },
+        store: { recordIfNew: async () => 'accepted' },
       }),
     ).resolves.toMatchObject({ status: 'rejected', error: { code: 'webhook-invalid' } })
+  })
+
+  test('does not treat an unrelated database uniqueness error as an idempotent delivery', async () => {
+    const store = createPayloadWebhookEventStore({
+      create: async () => {
+        throw Object.assign(new Error('duplicate key value violates unique constraint'), {
+          code: '23505',
+          constraint: 'organizations_slug_idx',
+        })
+      },
+    } as unknown as Payload)
+
+    await expect(
+      store.recordIfNew({ eventID: 'evt-unrelated-constraint', integrationID: 'integration-1', organizationID: organizationA.id }),
+    ).rejects.toMatchObject({ code: '23505', constraint: 'organizations_slug_idx' })
   })
 
   test('records provider failures without leaking credential-shaped values', () => {
@@ -160,7 +187,7 @@ describe('integration foundation', () => {
         provider: 'webhook',
         status: 'enabled',
         organization: organizationA.id,
-        config: { endpoint: '/events' },
+        config: { signatureHeader: 'x-alpha-signature' },
         secretRef: { key: 'INTEGRATION_ALPHA_SECRET' },
       } as any,
     })
