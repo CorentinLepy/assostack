@@ -115,14 +115,14 @@ describe('SMTP email adapter (no network)', () => {
     await expect(adapter.sendEmail!(setup().input)).rejects.toBe(failure)
   })
 
-  test('registers real SMTP and webhook adapters while Brevo remains a placeholder', async () => {
+  test('registers real SMTP and webhook adapters while HelloAsso remains a placeholder', async () => {
     const registry = createDefaultIntegrationRegistry()
     expect(registry.get('smtp')?.capabilities).toEqual(['email'])
     expect(registry.get('smtp')?.sendEmail).toBeTypeOf('function')
     expect(registry.get('smtp')?.execute).toBeUndefined()
     expect(registry.get('webhook')?.verifyInboundWebhook).toBeTypeOf('function')
-    const brevo = registry.get('brevo')!
-    expect(brevo.sendEmail).toBeUndefined()
-    await expect(brevo.execute!(setup().input)).resolves.toEqual({ status: 'not-implemented' })
+    const helloasso = registry.get('helloasso')!
+    expect(helloasso.sendEmail).toBeUndefined()
+    await expect(helloasso.execute!(setup().input)).resolves.toEqual({ status: 'not-implemented' })
   })
 })

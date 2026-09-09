@@ -4,7 +4,7 @@ AssoStack integrations are replaceable adapters. CRM, CMS, Events, Memberships a
 
 ## Adapter and registry
 
-`apps/admin/src/integrations/types.ts` defines the provider-neutral contracts. An `IntegrationExecutionContext` always contains the organization and integration identifiers. `IntegrationRegistry` resolves adapters by the allow-listed provider name. The default registry implements generic inbound webhooks and SMTP email. HelloAsso, Brevo, Cloudflare R2, Cloudflare Turnstile and automation remain placeholders that do not call external APIs.
+`apps/admin/src/integrations/types.ts` defines the provider-neutral contracts. An `IntegrationExecutionContext` always contains the organization and integration identifiers. `IntegrationRegistry` resolves adapters by the allow-listed provider name. The default registry implements generic inbound webhooks, SMTP email and Brevo transactional email. HelloAsso, Cloudflare R2, Cloudflare Turnstile and automation remain placeholders that do not call external APIs.
 
 Adapters declare capabilities such as execution or inbound/outbound webhooks. A provider implementation should validate its non-sensitive configuration and keep provider SDK details inside its own adapter module.
 
@@ -30,11 +30,13 @@ Enabled generic webhook integrations receive `POST /api/integrations/:id/webhook
 
 ### Outbound email
 
-`email.ts` defines `EmailMessage` (`to: string | string[]`, `subject: string`, optional `text`, `html` and `replyTo`) and `EmailDeliveryResult` (`status: 'accepted'`, optional `messageID`). Messages require at least one non-empty recipient, a non-empty subject and content in text or HTML. The optional `sendEmail({ config, context, logger, message, secret })` adapter method implements the `email` capability independently of `execute()`. Brevo is expected to implement this same generic contract later.
+`email.ts` defines `EmailMessage` (`to: string | string[]`, `subject: string`, optional `text`, `html` and `replyTo`) and `EmailDeliveryResult` (`status: 'accepted'`, optional `messageID`). Messages require at least one non-empty recipient, a non-empty subject and content in text or HTML. The optional `sendEmail({ config, context, logger, message, secret })` adapter method implements the `email` capability independently of `execute()`. SMTP and Brevo both implement this same provider-neutral email contract through IntegrationAdapter.sendEmail().
 
 SMTP accepts only non-sensitive `host`, integer `port` (1–65535), boolean `secure`, optional `username`, `fromAddress` and optional `fromName`. String settings are trimmed. The password must be resolved only through `secretRef` / `SecretStore` and passed as `secret`; it never belongs in config. A username requires a non-empty string secret; omitting username allows unauthenticated SMTP without a secret. Password whitespace is preserved.
 
 `smtp-adapter.ts` keeps Nodemailer and SMTP transport details provider-local. `createSMTPAdapter()` accepts a minimal transport factory for tests without network access. Each call validates inputs and sends one email, returning only acceptance and the provider message ID. Provider failures propagate without adapter logging; callers must sanitize errors before logging or exposing them. Acceptance does not guarantee inbox delivery. Callers remain responsible for tenant authorization and secret resolution. No endpoint, templates, campaigns, queue/retry runtime or domain wiring is included.
+
+Brevo accepts only non-sensitive `fromAddress` and optional `fromName`. Its API key comes only from the caller through `secretRef` / `SecretStore` as `secret`, never from config. `brevo-adapter.ts` uses built-in fetch with an injectable HTTP boundary for network-free tests to POST to the fixed `https://api.brevo.com/v3/smtp/email` transactional endpoint. It forwards the context AbortSignal and returns acceptance plus the optional message ID; acceptance means Brevo accepted the API request, not guaranteed inbox delivery. Errors are sanitized without adapter logging. No campaigns, templates, contact/list synchronization, marketing automation, Brevo webhooks, queue/retries, CRM/domain wiring or idempotency mapping are implemented.
 
 ### Provider checklist
 

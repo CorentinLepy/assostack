@@ -75,7 +75,7 @@ describe('integration foundation', () => {
     }
   })
 
-  test('registers every initial provider without implementing external APIs', () => {
+  test('registers every initial provider and the Brevo email capability', () => {
     const registry = createDefaultIntegrationRegistry()
 
     expect(registry.list()).toEqual([
@@ -88,7 +88,8 @@ describe('integration foundation', () => {
       'automation',
     ])
     expect(registry.get('unknown')).toBeUndefined()
-    expect(registry.get('brevo')?.execute).toBeDefined()
+    expect(registry.get('brevo')?.capabilities).toEqual(['email'])
+    expect(registry.get('brevo')?.sendEmail).toBeDefined()
   })
 
   test('accepts a verified webhook once and treats the duplicate as idempotent', async () => {
