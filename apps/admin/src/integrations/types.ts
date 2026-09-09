@@ -1,4 +1,5 @@
 import type { RelationshipID } from '../access/organizations'
+import type { EmailDeliveryResult, EmailMessage } from './email'
 
 export const integrationProviders = [
   'helloasso',
@@ -12,7 +13,7 @@ export const integrationProviders = [
 
 export type IntegrationProvider = (typeof integrationProviders)[number]
 
-export type IntegrationCapability = 'execute' | 'inbound-webhooks' | 'outbound-webhooks'
+export type IntegrationCapability = 'execute' | 'inbound-webhooks' | 'outbound-webhooks' | 'email'
 
 export type IntegrationExecutionContext = {
   organizationID: RelationshipID
@@ -30,6 +31,13 @@ export type IntegrationAdapter<TConfig extends Record<string, unknown> = Record<
   provider: IntegrationProvider
   capabilities: readonly IntegrationCapability[]
   validateConfig: (config: unknown) => config is TConfig
+  sendEmail?: (input: {
+    config: TConfig
+    context: IntegrationExecutionContext
+    logger: IntegrationLogger
+    message: EmailMessage
+    secret: unknown
+  }) => Promise<EmailDeliveryResult>
   execute?: (input: {
     config: TConfig
     context: IntegrationExecutionContext
