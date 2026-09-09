@@ -136,7 +136,7 @@ describe('Brevo transactional email (no network)', () => {
       expect(registry.get(provider)?.execute).toBeUndefined()
     }
     expect(registry.get('webhook')?.verifyInboundWebhook).toBeTypeOf('function')
-    for (const provider of ['helloasso', 'cloudflare-r2', 'cloudflare-turnstile', 'automation']) {
+    for (const provider of ['helloasso', 'cloudflare-r2', 'automation']) {
       const adapter = registry.get(provider)!
       expect(adapter.sendEmail).toBeUndefined()
       await expect(adapter.execute!(setup().input)).resolves.toEqual({ status: 'not-implemented' })

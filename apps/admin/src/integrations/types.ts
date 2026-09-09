@@ -13,7 +13,7 @@ export const integrationProviders = [
 
 export type IntegrationProvider = (typeof integrationProviders)[number]
 
-export type IntegrationCapability = 'execute' | 'inbound-webhooks' | 'outbound-webhooks' | 'email'
+export type IntegrationCapability = 'execute' | 'inbound-webhooks' | 'outbound-webhooks' | 'email' | 'anti-abuse'
 
 export type IntegrationExecutionContext = {
   organizationID: RelationshipID
@@ -38,6 +38,14 @@ export type IntegrationAdapter<TConfig extends Record<string, unknown> = Record<
     message: EmailMessage
     secret: unknown
   }) => Promise<EmailDeliveryResult>
+  verifyChallenge?: (input: {
+    config: TConfig
+    context: IntegrationExecutionContext
+    logger: IntegrationLogger
+    token: string
+    remoteIP?: string
+    secret: unknown
+  }) => Promise<{ verified: boolean }>
   execute?: (input: {
     config: TConfig
     context: IntegrationExecutionContext
