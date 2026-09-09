@@ -1,0 +1,109 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-assostack}
+      POSTGRES_USER: ${POSTGRES_USER:-assostack}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - assostack-postgres:/var/lib/postgresql
+    networks:
+      - assostack
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-assostack} -d ${POSTGRES_DB:-assostack}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    command: ["postgres", "-c", "listen_addresses=*"]
+
+  admin:
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL}
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:?set PAYLOAD_SECRET}
+      NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL:?set NEXT_PUBLIC_SERVER_URL}
+      PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:?set PUBLIC_WEB_URL}
+      ASSOSTACK_API_URL: ${ASSOSTACK_API_URL:-}
+      ASSOSTACK_ORGANIZATION: ${ASSOSTACK_ORGANIZATION:-}
+      ASSOSTACK_JOBS_AUTORUN: ${ASSOSTACK_JOBS_AUTORUN:-false}
+      PAYLOAD_DB_PUSH: ${PAYLOAD_DB_PUSH:-false}
+    ports:
+      - "${ASSOSTACK_BIND_ADDRESS:-127.0.0.1}:3001:3001"
+    volumes:
+      - assostack-admin-media:/workspace/apps/admin/media
+      - assostack-admin-documents:/workspace/apps/admin/documents
+    networks:
+      - assostack
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:3001/api/health/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 25s
+
+  web-build:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    environment:
+      NODE_ENV: production
+      ASSOSTACK_API_URL: ${ASSOSTACK_API_URL:-http://admin:3001}
+      ASSOSTACK_ORGANIZATION: ${ASSOSTACK_ORGANIZATION:-}
+      PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:4321}
+    command:
+      - sh
+      - -lc
+      - |
+        max_attempts=40
+        attempt=1
+        until curl -fsS http://admin:3001/api/health/ready >/dev/null; do
+          if [ "$$attempt" -ge "$$max_attempts" ]; then
+            echo "admin readiness check failed after $${max_attempts} attempts" >&2
+            exit 1
+          fi
+          echo "waiting for admin readiness (attempt $${attempt}/$${max_attempts})"
+          attempt=$$(($$attempt + 1))
+          sleep 3
+        done
+        pnpm --filter @assostack/web build
+    volumes:
+      - assostack-web-dist:/workspace/apps/web/dist
+    networks:
+      - assostack
+
+  web:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "${ASSOSTACK_BIND_ADDRESS:-127.0.0.1}:4321:80"
+    volumes:
+      - assostack-web-dist:/usr/share/nginx/html:ro
+      - ./apps/web/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - assostack
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  assostack-postgres:
+  assostack-admin-media:
+  assostack-admin-documents:
+  assostack-web-dist:
+
+networks:
+  assostack:
+    driver: bridge

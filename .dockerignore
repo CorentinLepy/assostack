@@ -1,0 +1,10 @@
+.git
+.gitignore
+node_modules
+**/node_modules
+**/.next
+**/dist
+**/.astro
+.env
+.env.*
+!.env.production.example
