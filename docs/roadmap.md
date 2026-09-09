@@ -69,7 +69,7 @@ Goal: cover common association workflows through reusable modules.
 
 Exit criteria: Team SMH can operate its core association workflows on AssoStack without Team SMH-specific logic in the product core.
 
-## 0.5 Integrations
+## 0.5 Integrations — complete
 
 Goal: connect AssoStack safely to external services.
 

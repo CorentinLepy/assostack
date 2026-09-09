@@ -1,5 +1,6 @@
 import { createSMTPAdapter } from './smtp-adapter'
 import { createBrevoAdapter } from './brevo-adapter'
+import { createTurnstileAdapter } from './turnstile-adapter'
 import { createWebhookAdapter } from './webhook-adapter'
 import { integrationProviders, type IntegrationAdapter, type IntegrationProvider } from './types'
 
@@ -51,6 +52,11 @@ export const createDefaultIntegrationRegistry = (): IntegrationRegistry => {
 
     if (provider === 'brevo') {
       registry.register(createBrevoAdapter())
+      continue
+    }
+
+    if (provider === 'cloudflare-turnstile') {
+      registry.register(createTurnstileAdapter())
       continue
     }
 
