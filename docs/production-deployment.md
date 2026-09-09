@@ -117,7 +117,13 @@ Use the real PostgreSQL health status before proceeding.
 After PostgreSQL is healthy, run migrations explicitly rather than relying on runtime schema mutation:
 
 ```bash
-docker compose --env-file .env.production -f docker-compose.prod.yml run --rm admin sh -lc "cd /workspace/apps/admin && pnpm migrate"
+docker compose --env-file .env.production -f docker-compose.prod.yml run --rm admin sh -lc "cd /workspace/apps/admin && pnpm --config.verify-deps-before-run=false migrate"
+```
+
+To check migration status explicitly:
+
+```bash
+docker compose --env-file .env.production -f docker-compose.prod.yml run --rm admin sh -lc "cd /workspace/apps/admin && pnpm --config.verify-deps-before-run=false migrate:status"
 ```
 
 This must use the repository’s existing Payload migration command and should only be run against a fresh or maintained production database. The stack has `PAYLOAD_DB_PUSH=false` set to make this explicit and to avoid automatic schema mutation during startup.
