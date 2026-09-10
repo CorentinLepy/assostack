@@ -14,10 +14,24 @@ export const Memberships: CollectionConfig = {
   slug: 'memberships',
   admin: {
     useAsTitle: 'membershipNumber',
-    defaultColumns: ['status', 'membershipNumber', 'contact', 'membershipType', 'startsAt', 'endsAt'],
+    defaultColumns: [
+      'status',
+      'membershipNumber',
+      'contact',
+      'membershipType',
+      'startsAt',
+      'endsAt',
+    ],
     listSearchableFields: ['membershipNumber', 'externalReference'],
     description:
-      'Tenant-scoped membership lifecycle. A membership references an existing CRM Contact and Membership Type instead of duplicating identity.',
+      'Suivez les adhésions, leur période de validité et les types proposés par votre association.',
+    components: {
+      views: {
+        list: {
+          Component: '@/admin/memberships/MembershipsListView#MembershipsListView',
+        },
+      },
+    },
   },
   access: {
     create: ({ req }) => canManageAnyOrganization(req.user),

@@ -2,7 +2,15 @@ import type { CollectionConfig } from 'payload'
 
 import { isPlatformAdmin, organizationRecordAccess } from '../access/organizations'
 import { builtInPublicRouteOptions } from '../cms/public-routes'
+import {
+  configurableOptionalModuleOptions,
+  moduleRegistryByID,
+} from '../admin/module-registry'
 import { validateWebsiteSettings } from '../hooks/validateWebsiteSettings'
+import {
+  materializeOrganizationModules,
+  normalizeOrganizationModules,
+} from '../hooks/organization-modules'
 import {
   organizationSiteSyncAfterChange,
   organizationSiteSyncAfterDelete,
@@ -33,7 +41,9 @@ export const Organizations: CollectionConfig = {
   hooks: {
     afterChange: [organizationSiteSyncAfterChange],
     afterDelete: [organizationSiteSyncAfterDelete],
+    afterRead: [materializeOrganizationModules],
     beforeChange: [validateWebsiteSettings],
+    beforeValidate: [normalizeOrganizationModules],
   },
   fields: [
     {
@@ -51,7 +61,8 @@ export const Organizations: CollectionConfig = {
         update: ({ req }) => isPlatformAdmin(req.user),
       },
       admin: {
-        description: 'Stable installation-level identifier. Only platform administrators can change it.',
+        description:
+          'Stable installation-level identifier. Only platform administrators can change it.',
       },
     },
     {
@@ -75,7 +86,8 @@ export const Organizations: CollectionConfig = {
       name: 'settings',
       type: 'group',
       admin: {
-        description: 'Organization-managed defaults used by AssoStack modules and the public website.',
+        description:
+          'Organization-managed defaults used by AssoStack modules and the public website.',
       },
       fields: [
         {
@@ -111,6 +123,84 @@ export const Organizations: CollectionConfig = {
           ],
         },
         {
+          name: 'modules',
+          type: 'group',
+          label: 'Modules',
+          admin: {
+            description:
+              'Activez les outils utilisés par votre association. Les données existantes sont conservées.',
+          },
+          fields: [
+            {
+              name: 'enabled',
+              label: 'Modules activés',
+              type: 'select',
+              hasMany: true,
+              required: true,
+              options: configurableOptionalModuleOptions,
+              defaultValue: configurableOptionalModuleOptions.map((option) => option.value),
+              admin: {
+                description:
+                  'Sélectionnez les modules utiles à votre organisation. Les dépendances nécessaires sont validées automatiquement.',
+              },
+            },
+            {
+              name: 'memberships',
+              type: 'checkbox',
+              label: moduleRegistryByID.get('memberships')?.label,
+              defaultValue: true,
+              admin: {
+                hidden: true,
+              },
+            },
+            {
+              name: 'events',
+              type: 'checkbox',
+              label: moduleRegistryByID.get('events')?.label,
+              defaultValue: true,
+              admin: {
+                hidden: true,
+              },
+            },
+            {
+              name: 'volunteers',
+              type: 'checkbox',
+              label: moduleRegistryByID.get('volunteers')?.label,
+              defaultValue: true,
+              admin: {
+                hidden: true,
+              },
+            },
+            {
+              name: 'partnerships',
+              type: 'checkbox',
+              label: moduleRegistryByID.get('partnerships')?.label,
+              defaultValue: true,
+              admin: {
+                hidden: true,
+              },
+            },
+            {
+              name: 'forms',
+              type: 'checkbox',
+              label: moduleRegistryByID.get('forms')?.label,
+              defaultValue: true,
+              admin: {
+                hidden: true,
+              },
+            },
+            {
+              name: 'website',
+              type: 'checkbox',
+              label: moduleRegistryByID.get('website')?.label,
+              defaultValue: true,
+              admin: {
+                hidden: true,
+              },
+            },
+          ],
+        },
+        {
           name: 'website',
           type: 'group',
           fields: [
@@ -123,21 +213,24 @@ export const Organizations: CollectionConfig = {
               name: 'primaryDomain',
               type: 'text',
               admin: {
-                description: 'Primary hostname for the public website, without organization-specific assumptions.',
+                description:
+                  'Primary hostname for the public website, without organization-specific assumptions.',
               },
             },
             {
               name: 'siteTitle',
               type: 'text',
               admin: {
-                description: 'Optional public brand/title override. Defaults to the organization name.',
+                description:
+                  'Optional public brand/title override. Defaults to the organization name.',
               },
             },
             {
               name: 'tagline',
               type: 'textarea',
               admin: {
-                description: 'Optional short public description displayed by compatible website themes.',
+                description:
+                  'Optional short public description displayed by compatible website themes.',
               },
             },
             {
@@ -164,7 +257,8 @@ export const Organizations: CollectionConfig = {
               maxRows: 20,
               admin: {
                 condition: (_data, siblingData) => siblingData?.navigationMode === 'manual',
-                description: 'Ordered primary navigation. Choose an organization page, an AssoStack built-in public route, or an external URL.',
+                description:
+                  'Ordered primary navigation. Choose an organization page, an AssoStack built-in public route, or an external URL.',
               },
               fields: [
                 {
@@ -225,7 +319,8 @@ export const Organizations: CollectionConfig = {
               name: 'theme',
               type: 'group',
               admin: {
-                description: 'Constrained design tokens. Arbitrary CSS or JavaScript is intentionally not supported.',
+                description:
+                  'Constrained design tokens. Arbitrary CSS or JavaScript is intentionally not supported.',
               },
               fields: [
                 {

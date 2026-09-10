@@ -3,7 +3,10 @@ import type { CollectionConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
 import { canManageAnyOrganization, organizationRoleAccess } from '../access/organizations'
-import { assertDocumentContactBelongsToOrganization, maintainDocumentAuthor } from '../association/document-hooks'
+import {
+  assertDocumentContactBelongsToOrganization,
+  maintainDocumentAuthor,
+} from '../association/document-hooks'
 import { assertOrganizationWriteAccess } from '../hooks/assertOrganizationWriteAccess'
 
 const filename = fileURLToPath(import.meta.url)
@@ -15,7 +18,8 @@ export const Documents: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'category', 'status', 'contact', 'createdBy', 'updatedAt'],
     listSearchableFields: ['title', 'description', 'category'],
-    description: 'Private association documents. This collection is intentionally separate from public CMS Media.',
+    description:
+      'Conservez les documents internes de votre association, séparés des médias publiés sur le site.',
   },
   access: {
     create: ({ req }) => canManageAnyOrganization(req.user),
@@ -49,7 +53,8 @@ export const Documents: CollectionConfig = {
       type: 'text',
       index: true,
       admin: {
-        description: 'Free-form reusable category. Tenant-configurable taxonomies can be added later without changing storage.',
+        description:
+          'Free-form reusable category. Tenant-configurable taxonomies can be added later without changing storage.',
       },
     },
     {

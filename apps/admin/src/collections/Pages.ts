@@ -15,6 +15,7 @@ export const Pages: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'slug', '_status', 'publishedAt', 'updatedAt'],
+    description: 'Créez et publiez les pages de votre site web.',
   },
   access: {
     create: ({ req }) => canManageAnyOrganization(req.user),

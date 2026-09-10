@@ -15,6 +15,7 @@ export const Posts: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'slug', '_status', 'publishedAt', 'updatedAt'],
+    description: 'Rédigez les actualités et publications de votre association.',
   },
   access: {
     create: ({ req }) => canManageAnyOrganization(req.user),

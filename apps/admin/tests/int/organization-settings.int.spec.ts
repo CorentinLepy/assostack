@@ -133,6 +133,44 @@ describe('organization settings authorization', () => {
     expect((updated as any).settings?.website?.primaryDomain).toBe('alpha.example.test')
   })
 
+  test('defaults optional modules to enabled and lets an organization admin configure their own modules', async () => {
+    const initial = await payload.findByID({
+      collection: 'organizations',
+      id: organizationA.id,
+      overrideAccess: true,
+    })
+
+    expect((initial as any).settings?.modules).toMatchObject({
+      memberships: true,
+      events: true,
+      volunteers: true,
+      partnerships: true,
+      forms: true,
+      website: true,
+    })
+
+    const updated = await payload.update({
+      collection: 'organizations',
+      id: organizationA.id,
+      overrideAccess: false,
+      user: asRequestUser(adminA) as any,
+      data: {
+        settings: {
+          modules: {
+            memberships: true,
+            events: true,
+            volunteers: false,
+            partnerships: true,
+            forms: true,
+            website: true,
+          },
+        },
+      } as any,
+    })
+
+    expect((updated as any).settings?.modules?.volunteers).toBe(false)
+  })
+
   test('denies organization admins from updating another tenant', async () => {
     await expect(
       payload.update({
@@ -143,6 +181,24 @@ describe('organization settings authorization', () => {
         data: {
           name: 'Forbidden cross-tenant update',
         },
+      }),
+    ).rejects.toThrow()
+  })
+
+  test('denies organization admins from changing modules for another organization', async () => {
+    await expect(
+      payload.update({
+        collection: 'organizations',
+        id: organizationB.id,
+        overrideAccess: false,
+        user: asRequestUser(adminA) as any,
+        data: {
+          settings: {
+            modules: {
+              volunteers: false,
+            },
+          },
+        } as any,
       }),
     ).rejects.toThrow()
   })

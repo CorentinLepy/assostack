@@ -17,7 +17,14 @@ export const Contacts: CollectionConfig = {
     defaultColumns: ['displayName', 'kind', 'email', 'status', 'updatedAt'],
     listSearchableFields: ['displayName', 'email', 'phone', 'externalReference'],
     description:
-      'Tenant-scoped CRM parties. Memberships, volunteers, sponsors and other modules reference these contacts instead of duplicating people.',
+      'Centralisez les personnes et les structures liées à votre association dans un répertoire partagé.',
+    components: {
+      views: {
+        list: {
+          Component: '@/admin/contacts/ContactsListView#ContactsListView',
+        },
+      },
+    },
   },
   access: {
     create: ({ req }) => canManageAnyOrganization(req.user),
@@ -46,7 +53,7 @@ export const Contacts: CollectionConfig = {
       ],
       admin: {
         position: 'sidebar',
-        description: 'A CRM party can represent either a person or another organization.',
+        description: 'Indiquez si ce contact représente une personne ou une organisation.',
       },
     },
     {
@@ -61,7 +68,8 @@ export const Contacts: CollectionConfig = {
       ],
       admin: {
         position: 'sidebar',
-        description: 'Archive contacts instead of deleting records that may be referenced by CRM history.',
+        description:
+          'Archivez un contact au lieu de le supprimer si son historique doit être conservé.',
       },
     },
     {
@@ -71,7 +79,7 @@ export const Contacts: CollectionConfig = {
       admin: {
         position: 'sidebar',
         readOnly: true,
-        description: 'Managed automatically when the contact enters or leaves the archived state.',
+        description: 'Renseigné automatiquement lors de l’archivage du contact.',
       },
     },
     {
@@ -83,8 +91,7 @@ export const Contacts: CollectionConfig = {
       index: true,
       admin: {
         position: 'sidebar',
-        description:
-          'Optional CRM taxonomy. Every assigned Tag is validated server-side against this Contact organization.',
+        description: 'Classez ce contact avec des catégories utiles à votre suivi.',
       },
     },
     {
@@ -93,8 +100,7 @@ export const Contacts: CollectionConfig = {
       required: true,
       index: true,
       admin: {
-        description:
-          'Stable human-readable CRM label. When omitted, AssoStack derives it from structured person/organization identity when possible.',
+        description: 'Nom affiché dans la plateforme et les listes.',
       },
     },
     {
@@ -166,14 +172,16 @@ export const Contacts: CollectionConfig = {
       type: 'text',
       index: true,
       admin: {
-        description: 'Primary phone number. Formatting remains user-facing; provider-specific normalization comes later.',
+        description:
+          'Primary phone number. Formatting remains user-facing; provider-specific normalization comes later.',
       },
     },
     {
       name: 'address',
       type: 'group',
       admin: {
-        description: 'Optional primary postal address. The model intentionally avoids country-specific address assumptions.',
+        description:
+          'Optional primary postal address. The model intentionally avoids country-specific address assumptions.',
       },
       fields: [
         {

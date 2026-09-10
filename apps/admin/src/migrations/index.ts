@@ -1,25 +1,27 @@
-import * as migration_20260906_205240_initial_schema from './20260906_205240_initial_schema';
-import * as migration_20260906_210752_cms_foundation from './20260906_210752_cms_foundation';
-import * as migration_20260906_210900_cms_slug_uniqueness from './20260906_210900_cms_slug_uniqueness';
-import * as migration_20260906_214736_site_configuration from './20260906_214736_site_configuration';
-import * as migration_20260906_223611_page_sections from './20260906_223611_page_sections';
-import * as migration_20260906_225243_builtin_routes from './20260906_225243_builtin_routes';
-import * as migration_20260907_063504_site_sync_job from './20260907_063504_site_sync_job';
-import * as migration_20260907_065526_contact_core from './20260907_065526_contact_core';
-import * as migration_20260907_070732_crm_interactions from './20260907_070732_crm_interactions';
-import * as migration_20260907_072333_crm_tasks from './20260907_072333_crm_tasks';
-import * as migration_20260907_073402_crm_contact_tags from './20260907_073402_crm_contact_tags';
-import * as migration_20260907_132550_crm_privacy from './20260907_132550_crm_privacy';
-import * as migration_20260907_161509_crm_memberships from './20260907_161509_crm_memberships';
-import * as migration_20260907_162849_events_registrations from './20260907_162849_events_registrations';
-import * as migration_20260907_164047_volunteer_shifts_assignments from './20260907_164047_volunteer_shifts_assignments';
-import * as migration_20260907_180657_partnerships from './20260907_180657_partnerships';
-import * as migration_20260907_181843_crm_notes from './20260907_181843_crm_notes';
-import * as migration_20260907_193056_crm_custom_fields from './20260907_193056_crm_custom_fields';
-import * as migration_20260907_201705_forms_submissions from './20260907_201705_forms_submissions';
-import * as migration_20260907_212207_association_documents from './20260907_212207_association_documents';
-import * as migration_20260907_215240_integrations_foundation from './20260907_215240_integrations_foundation';
-import * as migration_20260908_142101_integrations_webhook_events from './20260908_142101_integrations_webhook_events';
+import * as migration_20260906_205240_initial_schema from './20260906_205240_initial_schema'
+import * as migration_20260906_210752_cms_foundation from './20260906_210752_cms_foundation'
+import * as migration_20260906_210900_cms_slug_uniqueness from './20260906_210900_cms_slug_uniqueness'
+import * as migration_20260906_214736_site_configuration from './20260906_214736_site_configuration'
+import * as migration_20260906_223611_page_sections from './20260906_223611_page_sections'
+import * as migration_20260906_225243_builtin_routes from './20260906_225243_builtin_routes'
+import * as migration_20260907_063504_site_sync_job from './20260907_063504_site_sync_job'
+import * as migration_20260907_065526_contact_core from './20260907_065526_contact_core'
+import * as migration_20260907_070732_crm_interactions from './20260907_070732_crm_interactions'
+import * as migration_20260907_072333_crm_tasks from './20260907_072333_crm_tasks'
+import * as migration_20260907_073402_crm_contact_tags from './20260907_073402_crm_contact_tags'
+import * as migration_20260907_132550_crm_privacy from './20260907_132550_crm_privacy'
+import * as migration_20260907_161509_crm_memberships from './20260907_161509_crm_memberships'
+import * as migration_20260907_162849_events_registrations from './20260907_162849_events_registrations'
+import * as migration_20260907_164047_volunteer_shifts_assignments from './20260907_164047_volunteer_shifts_assignments'
+import * as migration_20260907_180657_partnerships from './20260907_180657_partnerships'
+import * as migration_20260907_181843_crm_notes from './20260907_181843_crm_notes'
+import * as migration_20260907_193056_crm_custom_fields from './20260907_193056_crm_custom_fields'
+import * as migration_20260907_201705_forms_submissions from './20260907_201705_forms_submissions'
+import * as migration_20260907_212207_association_documents from './20260907_212207_association_documents'
+import * as migration_20260907_215240_integrations_foundation from './20260907_215240_integrations_foundation'
+import * as migration_20260908_142101_integrations_webhook_events from './20260908_142101_integrations_webhook_events'
+import * as migration_20260910_000000_organization_module_enablement from './20260910_000000_organization_module_enablement'
+import * as migration_20260910_003000_organization_module_registry_enabled from './20260910_003000_organization_module_registry_enabled'
 
 export const migrations = [
   {
@@ -130,6 +132,16 @@ export const migrations = [
   {
     up: migration_20260908_142101_integrations_webhook_events.up,
     down: migration_20260908_142101_integrations_webhook_events.down,
-    name: '20260908_142101_integrations_webhook_events'
+    name: '20260908_142101_integrations_webhook_events',
   },
-];
+  {
+    up: migration_20260910_000000_organization_module_enablement.up,
+    down: migration_20260910_000000_organization_module_enablement.down,
+    name: '20260910_000000_organization_module_enablement',
+  },
+  {
+    up: migration_20260910_003000_organization_module_registry_enabled.up,
+    down: migration_20260910_003000_organization_module_registry_enabled.down,
+    name: '20260910_003000_organization_module_registry_enabled',
+  },
+]

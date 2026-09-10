@@ -15,7 +15,8 @@ export const Forms: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'key', 'status', 'updatedAt'],
     listSearchableFields: ['title', 'key'],
-    description: 'Tenant-scoped reusable form schemas for association workflows.',
+    description:
+      'Créez des formulaires pour vos inscriptions, demandes ou collectes d’informations.',
   },
   access: {
     create: ({ req }) => canManageAnyOrganization(req.user),
@@ -68,7 +69,8 @@ export const Forms: CollectionConfig = {
       type: 'array',
       maxRows: 100,
       admin: {
-        description: 'Ordered schema. Once submissions exist, archive this form and create a new version instead of changing fields.',
+        description:
+          'Ordered schema. Once submissions exist, archive this form and create a new version instead of changing fields.',
       },
       fields: [
         { name: 'label', type: 'text', required: true },

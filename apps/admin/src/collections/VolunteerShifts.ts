@@ -18,8 +18,7 @@ export const VolunteerShifts: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'status', 'event', 'startsAt', 'endsAt', 'capacity'],
     listSearchableFields: ['name', 'key', 'externalReference'],
-    description:
-      'Tenant-scoped volunteer work slots attached to Events. Volunteer identity stays in CRM Contacts.',
+    description: 'Planifiez les créneaux sur lesquels votre association a besoin de bénévoles.',
   },
   access: {
     create: ({ req }) => canManageAnyOrganization(req.user),
@@ -58,7 +57,8 @@ export const VolunteerShifts: CollectionConfig = {
       required: true,
       index: true,
       admin: {
-        description: 'Human-readable volunteer role or work slot, for example Setup or Welcome desk.',
+        description:
+          'Human-readable volunteer role or work slot, for example Setup or Welcome desk.',
       },
     },
     {

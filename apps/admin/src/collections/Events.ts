@@ -19,7 +19,14 @@ export const Events: CollectionConfig = {
     defaultColumns: ['title', 'status', 'startsAt', 'endsAt', 'timezone'],
     listSearchableFields: ['title', 'key', 'externalReference'],
     description:
-      'Tenant-scoped association activities and events. Public rendering, ticketing and competition-specific logic are separate concerns.',
+      'Organisez les activités et événements de votre association, avec leurs dates et inscriptions.',
+    components: {
+      views: {
+        list: {
+          Component: '@/admin/events/EventsListView#EventsListView',
+        },
+      },
+    },
   },
   access: {
     create: ({ req }) => canManageAnyOrganization(req.user),

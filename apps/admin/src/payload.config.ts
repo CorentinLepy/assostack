@@ -3,10 +3,12 @@ import { multiTenantPlugin } from '@payloadcms/plugin-multi-tenant'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
+import { fr } from 'payload/i18n/fr'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
 import { isPlatformAdmin } from './access/organizations'
+import { applyAdminProductNavigation } from './admin/product-navigation'
 import { Contacts } from './collections/Contacts'
 import { ContactCustomFieldValues } from './collections/ContactCustomFieldValues'
 import { ContactTags } from './collections/ContactTags'
@@ -42,7 +44,8 @@ import { SITE_SYNC_QUEUE, siteSyncTask } from './site-rebuild/task'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const publicWebURL = process.env.PUBLIC_WEB_URL ?? 'http://localhost:4321'
-const shouldPushSchema = process.env.NODE_ENV === 'development' && process.env.PAYLOAD_DB_PUSH !== 'false'
+const shouldPushSchema =
+  process.env.NODE_ENV === 'development' && process.env.PAYLOAD_DB_PUSH !== 'false'
 const shouldAutoRunJobs =
   process.env.ASSOSTACK_JOBS_AUTORUN === 'true' ||
   (process.env.NODE_ENV === 'production' && process.env.ASSOSTACK_JOBS_AUTORUN !== 'false')
@@ -50,11 +53,28 @@ const shouldAutoRunJobs =
 export default buildConfig({
   admin: {
     user: Users.slug,
+    meta: {
+      title: 'AssoStack',
+      titleSuffix: '',
+    },
+    theme: 'light',
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    components: {
+      graphics: {
+        Icon: '@/admin/AssoStackBrand#AssoStackIcon',
+        Logo: '@/admin/AssoStackBrand#AssoStackLogo',
+      },
+      Nav: '@/admin/AssoStackNav#AssoStackNav',
+      views: {
+        dashboard: {
+          Component: '@/admin/AssociationDashboardServer#AssociationDashboardServer',
+        },
+      },
+    },
   },
-  collections: [
+  collections: applyAdminProductNavigation([
     Organizations,
     Users,
     ContactTags,
@@ -82,7 +102,7 @@ export default buildConfig({
     Media,
     Pages,
     Posts,
-  ],
+  ]),
   cors: [publicWebURL],
   csrf: [publicWebURL],
   db: postgresAdapter({
@@ -94,6 +114,10 @@ export default buildConfig({
   }),
   editor: lexicalEditor(),
   endpoints: [...publicContentEndpoints, ...contactCsvEndpoints, ...integrationEndpoints],
+  i18n: {
+    fallbackLanguage: 'fr',
+    supportedLanguages: { fr },
+  },
   jobs: {
     enableConcurrencyControl: true,
     tasks: [siteSyncTask],

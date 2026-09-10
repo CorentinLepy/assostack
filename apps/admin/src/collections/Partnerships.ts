@@ -16,8 +16,7 @@ export const Partnerships: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'kind', 'status', 'partner', 'level', 'startsAt', 'endsAt'],
     listSearchableFields: ['name', 'key', 'agreementReference', 'externalReference'],
-    description:
-      'Tenant-scoped sponsorship and partnership lifecycle. Partner identity stays in CRM Contacts.',
+    description: 'Suivez vos partenariats, soutiens et conventions au même endroit.',
   },
   access: {
     create: ({ req }) => canManageAnyOrganization(req.user),
@@ -41,8 +40,7 @@ export const Partnerships: CollectionConfig = {
       required: true,
       index: true,
       admin: {
-        description:
-          'Human-readable partnership record, for example Acme - 2027 season. Separate records may represent different seasons or agreements.',
+        description: 'Donnez un nom clair à ce partenariat ou à cette convention.',
       },
     },
     {
@@ -51,7 +49,7 @@ export const Partnerships: CollectionConfig = {
       required: true,
       index: true,
       admin: {
-        description: 'Stable tenant-local machine key normalized from the name when omitted.',
+        description: 'Identifiant technique généré automatiquement à partir du nom.',
       },
     },
     {
@@ -61,8 +59,7 @@ export const Partnerships: CollectionConfig = {
       required: true,
       index: true,
       admin: {
-        description:
-          'Canonical CRM Contact for the partner. Organization Contacts are typical, but individual partners are supported by the generic core.',
+        description: 'Choisissez la personne ou la structure avec laquelle vous travaillez.',
       },
     },
     {
@@ -71,8 +68,7 @@ export const Partnerships: CollectionConfig = {
       relationTo: 'contacts',
       index: true,
       admin: {
-        description:
-          'Optional same-tenant CRM Contact used as the operational interlocutor. Identity is never duplicated here.',
+        description: 'Personne à contacter pour le suivi de ce partenariat.',
       },
     },
     {
@@ -81,7 +77,7 @@ export const Partnerships: CollectionConfig = {
       relationTo: 'partnership-levels',
       index: true,
       admin: {
-        description: 'Optional tenant-local partnership tier.',
+        description: 'Niveau associé à ce partenariat, si vous en utilisez.',
       },
     },
     {
@@ -118,7 +114,7 @@ export const Partnerships: CollectionConfig = {
       ],
       admin: {
         position: 'sidebar',
-        description: 'Current operational partnership lifecycle state.',
+        description: 'Situation actuelle de ce partenariat.',
       },
     },
     {
@@ -130,7 +126,7 @@ export const Partnerships: CollectionConfig = {
         date: {
           pickerAppearance: 'dayOnly',
         },
-        description: 'Optional agreement/service start date.',
+        description: 'Date de début de la convention ou de la prestation.',
       },
     },
     {
@@ -142,7 +138,7 @@ export const Partnerships: CollectionConfig = {
         date: {
           pickerAppearance: 'dayOnly',
         },
-        description: 'Optional end date. It cannot precede the start date when both are present.',
+        description: 'Date de fin, lorsqu’elle est connue.',
       },
     },
     {
@@ -151,7 +147,7 @@ export const Partnerships: CollectionConfig = {
       index: true,
       admin: {
         position: 'sidebar',
-        description: 'Optional internal/provider-neutral agreement or contract reference.',
+        description: 'Référence de la convention ou du contrat, si nécessaire.',
       },
     },
     {
@@ -160,7 +156,7 @@ export const Partnerships: CollectionConfig = {
       index: true,
       admin: {
         position: 'sidebar',
-        description: 'Optional import/integration reference. Never store credentials or secrets here.',
+        description: 'Référence utilisée par un import ou une intégration.',
       },
     },
     {
@@ -168,7 +164,7 @@ export const Partnerships: CollectionConfig = {
       type: 'textarea',
       maxLength: 4000,
       admin: {
-        description: 'Optional concise staff note. Avoid unnecessary sensitive data.',
+        description: 'Informations utiles pour le suivi par votre équipe.',
       },
     },
     {
@@ -179,7 +175,8 @@ export const Partnerships: CollectionConfig = {
       admin: {
         position: 'sidebar',
         readOnly: true,
-        description: 'Staff user that created this partnership. Managed by AssoStack and immutable.',
+        description:
+          'Staff user that created this partnership. Managed by AssoStack and immutable.',
       },
       access: {
         create: () => false,
