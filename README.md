@@ -103,6 +103,15 @@ The exact project license is being finalized before the first public release. Se
 
 The project is at an early stage, but contributions and technical discussion are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
+For local development, run:
+
+```bash
+pnpm setup:local
+pnpm dev
+```
+
+The setup command prepares local files and services only; it does not touch production infrastructure.
+
 ## Security
 
 Please do not open public issues for security vulnerabilities. See [SECURITY.md](SECURITY.md).
