@@ -11,14 +11,11 @@ The repository currently standardizes on pnpm 11 because it is within Payload 3.
 ## First start
 
 ```bash
-cp .env.example .env
-cp apps/admin/.env.example apps/admin/.env
-docker compose up -d postgres
-corepack enable
-corepack prepare pnpm@11.25.0 --activate
-pnpm install --frozen-lockfile
+pnpm setup:local
 pnpm dev
 ```
+
+`pnpm setup:local` prepares a local development machine only. It verifies required tools, checks the active Node.js version against `package.json`, creates missing local `.env` files from the checked-in examples, generates a local `apps/admin/.env` `PAYLOAD_SECRET` when needed without printing it, installs dependencies when they are missing, starts PostgreSQL through `docker-compose.yml`, waits for PostgreSQL to become healthy, and applies pending Payload migrations. It does not use production Compose files or touch production infrastructure.
 
 The default development endpoints are:
 
@@ -46,6 +43,8 @@ pnpm db:migrate:status
 Real secrets must never be committed. The checked-in `.env.example` files contain development-only placeholders.
 
 Payload reads its application environment from `apps/admin/.env` when run from that workspace. Docker Compose reads the root `.env` file for the local PostgreSQL service.
+
+The local setup command is idempotent: it creates missing env files, but it does not overwrite an existing non-placeholder `PAYLOAD_SECRET`.
 
 ## Database changes
 
