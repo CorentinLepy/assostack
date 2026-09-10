@@ -254,7 +254,10 @@ const parseArguments = (args: string[]) => {
 }
 
 export const shouldRunTeamSMHImporter = (args: string[]): boolean =>
-  args.some((arg) => arg.endsWith('team-smh-legacy-import.ts'))
+  args.some((arg) => arg.endsWith('team-smh-legacy-import.ts')) ||
+  (args[1]?.replaceAll('\\', '/').endsWith('/payload/bin.js') === true &&
+    Boolean(args[args.indexOf('--db') + 1]) &&
+    args[args.indexOf('--organization') + 1] === organizationSlug)
 
 const main = async () => {
   const { databasePath, apply } = parseArguments(process.argv.slice(2))
