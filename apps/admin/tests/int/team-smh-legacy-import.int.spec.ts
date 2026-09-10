@@ -88,6 +88,25 @@ describe('Team SMH legacy importer', () => {
       '--organization',
       'another-organization',
     ])).toBe(false)
+    expect(shouldRunTeamSMHImporter([
+      'node',
+      '/app/node_modules/payload/bin.js',
+      '--organization',
+      'team-smh',
+    ])).toBe(false)
+    expect(shouldRunTeamSMHImporter([
+      'node',
+      '/app/node_modules/payload/bin.js',
+      '--db',
+      '--organization',
+      'team-smh',
+    ])).toBe(false)
+    expect(shouldRunTeamSMHImporter([
+      'node',
+      '/app/node_modules/payload/bin.js',
+      '--db',
+      '/legacy/team_smh.sqlite',
+    ])).toBe(false)
   })
 
   test('plans only allowlisted data deterministically and excludes test pilots', () => {
