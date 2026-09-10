@@ -253,6 +253,9 @@ const parseArguments = (args: string[]) => {
   return { databasePath: args[databaseIndex + 1], apply: args.includes('--apply') }
 }
 
+export const shouldRunTeamSMHImporter = (args: string[]): boolean =>
+  args.some((arg) => arg.endsWith('team-smh-legacy-import.ts'))
+
 const main = async () => {
   const { databasePath, apply } = parseArguments(process.argv.slice(2))
   const [{ getPayload }, { default: config }] = await Promise.all([import('payload'), import('../payload.config.js')])
@@ -267,4 +270,6 @@ const main = async () => {
   }
 }
 
-if (process.argv[1]?.endsWith('team-smh-legacy-import.ts')) void main()
+if (shouldRunTeamSMHImporter(process.argv)) {
+  await main()
+}

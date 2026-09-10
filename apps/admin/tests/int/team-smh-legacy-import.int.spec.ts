@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
-import { createLegacyImportPlan, executeLegacyImport, type LegacyDatabase } from '../../src/scripts/team-smh-legacy-import'
+import { createLegacyImportPlan, executeLegacyImport, shouldRunTeamSMHImporter, type LegacyDatabase } from '../../src/scripts/team-smh-legacy-import'
 
 const forbiddenTables = ['users', 'api_tokens', 'api_tokens_v2', 'audit_logs', 'security_logs', 'visit_stats', 'blocked_ips', 'rate_limits', 'push_subscriptions', 'push_notifications', 'messages', 'task_logs', 'role_permissions', 'change_history', 'deleted_items']
 
@@ -47,6 +47,24 @@ describe('Team SMH legacy importer', () => {
       return database.prepare(sql) as unknown as { all: () => unknown[] }
     },
   }
+
+  test('recognizes Payload CLI arguments without matching a Vitest invocation', () => {
+    expect(shouldRunTeamSMHImporter([
+      'node',
+      'payload/bin.js',
+      'run',
+      'src/scripts/team-smh-legacy-import.ts',
+      '--',
+      '--db',
+      '/legacy/team_smh.sqlite',
+    ])).toBe(true)
+    expect(shouldRunTeamSMHImporter([
+      'node',
+      'vitest.mjs',
+      'run',
+      'tests/int/team-smh-legacy-import.int.spec.ts',
+    ])).toBe(false)
+  })
 
   test('plans only allowlisted data deterministically and excludes test pilots', () => {
     statements.length = 0
