@@ -48,7 +48,7 @@ describe('Team SMH legacy importer', () => {
     },
   }
 
-  test('recognizes Payload CLI arguments without matching a Vitest invocation', () => {
+  test('recognizes supported Payload CLI arguments without matching other processes', () => {
     expect(shouldRunTeamSMHImporter([
       'node',
       'payload/bin.js',
@@ -59,10 +59,53 @@ describe('Team SMH legacy importer', () => {
       '/legacy/team_smh.sqlite',
     ])).toBe(true)
     expect(shouldRunTeamSMHImporter([
+      '/usr/local/bin/node',
+      '/app/node_modules/payload/bin.js',
+      '--db',
+      '/legacy/team_smh.sqlite',
+      '--organization',
+      'team-smh',
+    ])).toBe(true)
+    expect(shouldRunTeamSMHImporter([
       'node',
       'vitest.mjs',
       'run',
       'tests/int/team-smh-legacy-import.int.spec.ts',
+    ])).toBe(false)
+    expect(shouldRunTeamSMHImporter([
+      'node',
+      'scripts/other-importer.js',
+      '--db',
+      '/legacy/team_smh.sqlite',
+      '--organization',
+      'team-smh',
+    ])).toBe(false)
+    expect(shouldRunTeamSMHImporter([
+      'node',
+      'C:\\app\\node_modules\\payload\\bin.js',
+      '--db',
+      '/legacy/team_smh.sqlite',
+      '--organization',
+      'another-organization',
+    ])).toBe(false)
+    expect(shouldRunTeamSMHImporter([
+      'node',
+      '/app/node_modules/payload/bin.js',
+      '--organization',
+      'team-smh',
+    ])).toBe(false)
+    expect(shouldRunTeamSMHImporter([
+      'node',
+      '/app/node_modules/payload/bin.js',
+      '--db',
+      '--organization',
+      'team-smh',
+    ])).toBe(false)
+    expect(shouldRunTeamSMHImporter([
+      'node',
+      '/app/node_modules/payload/bin.js',
+      '--db',
+      '/legacy/team_smh.sqlite',
     ])).toBe(false)
   })
 
